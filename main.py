@@ -3,19 +3,23 @@ from captum.attr import ShapleyValueSampling
 from tqdm import trange
 
 from load_data import load_data
-from train_models import train_randomForest
+from train_models import *
 from segmentation import *
 from utils import *
 
 def main():
 
 	# load data
-	dataset_name = 'UWAVE'
+	dataset_name = 'synth_fixed_multi_clf'
 	X_train, X_test, y_train, y_test = load_data(subset='all', dataset_name=dataset_name)
 
 	# train model
-	clf, preds = train_randomForest(X_train,y_train,X_test,y_test, dataset_name)
+	for _ in range(3):
+		#clf, preds = train_randomForest(X_train,y_train,X_test,y_test, dataset_name)
+		#clf, preds = train_miniRocket(X_train,y_train,X_test,y_test, dataset_name)
+		clf, preds = train_ResNet(X_train,y_train,X_test,y_test, dataset_name)
 
+	exit()
 	# create a dictionary to be dumped containing attribution and metadata
 	# initialize data structure meant to contain the segments
 	segments =  np.empty( (X_test.shape[0] , X_test.shape[1]), dtype=object) if X_test.shape[1] > 1  else (

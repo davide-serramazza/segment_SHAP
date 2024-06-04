@@ -9,10 +9,10 @@ def load_data(subset, dataset_name):
 			"subset has to be  either 'train' ,'test' or 'all'"
 		)
 
-	if dataset_name not in {'UWAVE', 'gunpoint', 'synth_uni', 'synth_multi'}:
-		raise ValueError(
-			"dataset_name has to be  either 'train' ,'test' or 'all'"
-		)
+	#if dataset_name not in {'UWAVE', 'gunpoint', 'synth_uni', 'synth_fixed_multi'}:
+#		raise ValueError(
+	#		"dataset_name note recognized"
+#		)
 
 	if dataset_name == "UWAVE":
 		X_train, y_train = np.load("datasets/UWAVE/Xtr.npy"), np.load("datasets/UWAVE/Ytr.npy")
@@ -24,7 +24,7 @@ def load_data(subset, dataset_name):
 		X_train, y_train = load_gunpoint(split="train")
 		X_test, y_test = load_gunpoint(split="test")
 	elif dataset_name.startswith("synth"):
-		X_test, X_train, y_test, y_train = load_synth_data(dataset_name)
+		X_train, X_test, y_train, y_test= load_synth_data(dataset_name)
 
 	le = LabelEncoder()
 	y_train = le.fit_transform(y_train)
@@ -38,6 +38,25 @@ def load_data(subset, dataset_name):
 		return X_train, X_test, y_train, y_test
 
 
+def load_synth_data(dataset_name):
+	# select file
+	if dataset_name.startswith("synth_fixed_multi"):
+		data = np.load("/home/davide/Desktop/datasets/fixed_length.npy", allow_pickle=True).item()
+	elif dataset_name.startswith("synth_varying_multi"):
+		data = np.load("/home/davide/Desktop/datasets/varying_length.npy", allow_pickle=True).item()
+
+
+	# select classification or regression target
+	X_train, X_test = data['train']['X'], data['test']['X']
+	if dataset_name.endswith("clf"):
+		y_train, y_test = data['train']['y_clf'].astype(int), data['test']['y_clf'].astype(int)
+	elif dataset_name.endswith("reg"):
+		y_train, y_test = data['train']['y_reg'].astype(int), data['test']['y_ref']
+
+	return X_train, X_test, y_train, y_test
+
+				                                                                   
+"""
 def load_synth_data(name):
 	if name == "synth_uni":
 		n_samples = 15000
@@ -62,3 +81,4 @@ def load_synth_data(name):
 	X_train, y_train = X[:14500], y[:14500]
 	X_test, y_test = X[14500:], y[14500:]
 	return X_test, X_train, y_test, y_train
+"""
