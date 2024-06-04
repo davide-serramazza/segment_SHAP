@@ -10,13 +10,14 @@ from utils import *
 def main():
 
 	# load data
-	dataset_name = 'synth_fixed_multi_clf'
+	dataset_name = 'synth_varying_multi_reg'
 	X_train, X_test, y_train, y_test = load_data(subset='all', dataset_name=dataset_name)
+	print( y_test[:10])
 
 	# train model
 	for _ in range(3):
-		#clf, preds = train_randomForest(X_train,y_train,X_test,y_test, dataset_name)
-		#clf, preds = train_miniRocket(X_train,y_train,X_test,y_test, dataset_name)
+		clf, preds = train_randomForest(X_train,y_train,X_test,y_test, dataset_name)
+		clf, preds = train_miniRocket(X_train,y_train,X_test,y_test, dataset_name)
 		clf, preds = train_ResNet(X_train,y_train,X_test,y_test, dataset_name)
 
 	exit()

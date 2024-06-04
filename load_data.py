@@ -39,6 +39,7 @@ def load_data(subset, dataset_name):
 
 
 def load_synth_data(dataset_name):
+	# TODO hard coded
 	# select file
 	if dataset_name.startswith("synth_fixed_multi"):
 		data = np.load("/home/davide/Desktop/datasets/fixed_length.npy", allow_pickle=True).item()
@@ -51,7 +52,7 @@ def load_synth_data(dataset_name):
 	if dataset_name.endswith("clf"):
 		y_train, y_test = data['train']['y_clf'].astype(int), data['test']['y_clf'].astype(int)
 	elif dataset_name.endswith("reg"):
-		y_train, y_test = data['train']['y_reg'].astype(int), data['test']['y_ref']
+		y_train, y_test = data['train']['y_reg'].astype(int), data['test']['y_reg']
 
 	return X_train, X_test, y_train, y_test
 
