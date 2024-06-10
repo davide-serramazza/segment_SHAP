@@ -1,10 +1,8 @@
 from torch import nn
 from torch.nn import functional as F
-from torch.optim import Adam
-from torch.autograd import Variable
-import numpy as np
 import torch
 from torch.utils import data
+
 """
 	code from dcam publication
 	
@@ -18,9 +16,11 @@ from torch.utils import data
 """
 
 class TSDataset(data.Dataset):
-	def __init__(self,x_train,labels):
-		self.samples = x_train
-		self.labels = labels
+	def __init__(self,x_train,labels, device="cpu"):
+		device = "cuda" if torch.cuda.is_available() else "cpu"
+
+		self.samples = torch.tensor(x_train).type(torch.float32).to(device)
+		self.labels = torch.tensor(labels).to(device)
 
 	def __len__(self):
 		return len(self.samples)
@@ -29,150 +29,7 @@ class TSDataset(data.Dataset):
 		return self.samples[idx],self.labels[idx]
 
 
-class ModelCNN():
-	def __init__(self,
-				 model,
-				 n_epochs_stop,
-				 save_path=None,
-				 device="cpu",
-				 criterion=nn.CrossEntropyLoss(),
-				 learning_rate=0.00001):
-
-		self.model = model
-		self.n_epochs_stop = n_epochs_stop
-		self.save_path = save_path
-		self.criterion = criterion
-		self.optimizer = Adam(self.model.parameters(), lr=learning_rate)
-		self.device = device
-
-
-	def __test(self,dataloader):
-		mean_loss = []
-		tot_correct = []
-		total_sample = []
-
-		with torch.no_grad():
-			for i,batch_data in enumerate(dataloader):
-				self.model.eval()
-				ts, label = batch_data
-				img = Variable(ts.float()).to(self.device)
-				v_label = Variable(label.float()).to(self.device)
-				# ===================forward=====================
-				output = self.model(img.float()).to(self.device)
-
-				loss = self.criterion(output.float(), v_label.long())
-
-				# ================eval on test===================
-				total = label.size(0)
-				_, predicted = torch.max(output.data, 1)
-				correct = (predicted.to(self.device) == label.to(self.device)).sum().item()
-
-				mean_loss.append(loss.item())
-				tot_correct.append(correct)
-				total_sample.append(total)
-
-		return mean_loss,tot_correct,total_sample
-
-	def train(self,num_epochs,train_loader,test_loader):
-
-		#inner function to print statistics
-		def print_stats():
-			print('Epoch [{}/{}], Loss Train: {:.4f},Loss Test: {:.4f}, Accuracy Train: {:.2f}%, Accuracy Test: {:.2f}%'
-				  .format(epoch + 1,
-						  num_epochs,
-						  np.mean(mean_loss_train),
-						  np.mean(mean_loss_test),
-						  (np.sum(mean_accuracy_train)/np.sum(total_sample_train)) * 100,
-						  current_val_accuracy * 100))
-
-
-		epochs_no_improve = 0
-		min_val_loss = np.Inf
-		max_val_accuracy = 0.0
-		loss_train_history = []
-		loss_test_history = []
-		accuracy_test_history = []
-
-		for epoch in range(num_epochs):
-			mean_loss_train = []
-			mean_accuracy_train = []
-			total_sample_train = []
-
-
-			for i,batch_data_train in enumerate(train_loader):
-				self.model.train()
-
-				ts_train, label_train = batch_data_train
-				img_train = Variable(ts_train.float()).to(self.device)
-				v_label_train = Variable(label_train.float()).to(self.device)
-
-				# ===================forward=====================
-				self.optimizer.zero_grad()
-				output_train = self.model(img_train.float()).to(self.device)
-
-				# ===================backward====================
-				loss_train = self.criterion(output_train.float(), v_label_train.long())
-				loss_train.backward()
-				self.optimizer.step()
-
-				# ================eval on train==================
-				total_train = label_train.size(0)
-				_, predicted_train = torch.max(output_train.data, 1)
-				correct_train = (predicted_train.to(self.device) == label_train.to(self.device)).sum().item()
-				mean_loss_train.append(loss_train.item())
-				mean_accuracy_train.append(correct_train)
-				total_sample_train.append(total_train)
-
-			# ==================eval on test=====================
-			mean_loss_test,tot_correct_test,total_sample_test = self.__test(test_loader)
-			current_val_accuracy = np.sum(tot_correct_test)/np.sum(total_sample_test)
-
-			# ====================verbose========================
-			if epoch % 10 == 0:
-				print_stats()
-
-			#TODO log more compact?
-			# ======================log==========================
-			loss_test_history.append(np.mean(mean_loss_test))
-			loss_train_history.append(np.mean(mean_loss_train))
-			accuracy_test_history.append(current_val_accuracy)
-			self.loss_test_history = loss_test_history
-			self.loss_train_history = loss_train_history
-			self.accuracy_test_history = accuracy_test_history
-
-			# ================early stopping=====================
-			if epoch == 3:
-				min_val_loss = np.sum(mean_loss_test)
-				max_val_accuracy = current_val_accuracy
-
-			if current_val_accuracy>max_val_accuracy:
-				#np.sum(mean_loss_test) < min_val_loss:
-				if self.save_path!=None:
-					torch.save(self.model, self.save_path)
-				epochs_no_improve = 0
-				min_val_loss = np.sum(mean_loss_test)
-				max_val_accuracy = current_val_accuracy
-			else:
-				epochs_no_improve += 1
-				if epochs_no_improve == self.n_epochs_stop:
-					print("TRAIN EARLY STOPPED; best accuracy is {:.2f} best loss is {:.4f}"
-						  .format( max_val_accuracy,np.average(min_val_loss) ))
-					if self.save_path!=None:
-						self.model = torch.load(self.save_path)
-					break
-		return max_val_accuracy
-
-	def predict(self,test_loader):
-		predictions = []
-		with torch.no_grad():
-			for i,batch_data in enumerate(test_loader):
-				X, y = batch_data
-				X= Variable(X.float()).to(self.device)
-				output = self.model(X.float()).to(self.device)
-				predictions.append(torch.max(output.data,1).indices)
-		return  torch.concat(predictions).cpu().numpy()
-
-
+######################################################################################################
 
 class Conv1dSamePadding(nn.Conv1d):
 	def forward(self, input):
@@ -214,15 +71,8 @@ class ConvBlock(nn.Module):
 
 class ResNetBaseline(nn.Module):
 
-	def __init__(self, in_channels, mid_channels = 64,
-				 num_pred_classes = 1):
+	def __init__(self, in_channels, mid_channels = 64, num_pred_classes = 1 ):
 		super().__init__()
-
-
-		self.input_args = {
-			'in_channels': in_channels,
-			'num_pred_classes': num_pred_classes
-		}
 
 		self.layers = nn.Sequential(*[
 			ResNetBlock(in_channels=in_channels, out_channels=mid_channels),
@@ -231,6 +81,7 @@ class ResNetBaseline(nn.Module):
 
 		])
 		self.final = nn.Linear(mid_channels * 2, num_pred_classes)
+
 
 	def forward(self, x):
 		x = self.layers(x)

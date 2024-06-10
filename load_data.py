@@ -9,6 +9,7 @@ def load_data(subset, dataset_name):
 			"subset has to be  either 'train' ,'test' or 'all'"
 		)
 
+	#TODO to be reintroduced
 	#if dataset_name not in {'UWAVE', 'gunpoint', 'synth_uni', 'synth_fixed_multi'}:
 #		raise ValueError(
 	#		"dataset_name note recognized"
@@ -17,25 +18,30 @@ def load_data(subset, dataset_name):
 	if dataset_name == "UWAVE":
 		X_train, y_train = np.load("datasets/UWAVE/Xtr.npy"), np.load("datasets/UWAVE/Ytr.npy")
 		X_test, y_test = np.load("datasets/UWAVE/Xte.npy"), np.load("datasets/UWAVE/Yte.npy")
+
 		# channels as second dimension
-		X_train, X_test = np.transpose(X_train, (0, 2, 1)), np.transpose(X_test, (0, 2, 1))
+		X_train, X_test = (np.transpose(X_train, (0, 2, 1)).astype(np.float32),
+		                   np.transpose(X_test, (0, 2, 1)).astype(np.float32))
 		y_train, y_test = np.reshape(y_train, y_train.shape[0]), np.reshape(y_test, y_test.shape[0])
+
 	elif dataset_name == "gunpoint":
 		X_train, y_train = load_gunpoint(split="train")
 		X_test, y_test = load_gunpoint(split="test")
+		X_train = X_train.astype(np.float32) ;  X_test = X_test.astype(np.float32)
+
 	elif dataset_name.startswith("synth"):
 		X_train, X_test, y_train, y_test= load_synth_data(dataset_name)
 
 	le = LabelEncoder()
 	y_train = le.fit_transform(y_train)
-	y_test = le.fit_transform(y_test)
+	y_test = le.transform(y_test)
 
 	if subset == 'train':
 		return X_train, y_train
 	elif subset == 'test':
 		return X_test, y_test
 	elif subset == 'all':
-		return X_train, X_test, y_train, y_test
+		return X_train, X_test, y_train, y_test, le.classes_
 
 
 def load_synth_data(dataset_name):
@@ -50,9 +56,10 @@ def load_synth_data(dataset_name):
 	# select classification or regression target
 	X_train, X_test = data['train']['X'], data['test']['X']
 	if dataset_name.endswith("clf"):
-		y_train, y_test = data['train']['y_clf'].astype(int), data['test']['y_clf'].astype(int)
+		y_train, y_test = data['train']['y_clf'], data['test']['y_clf']
 	elif dataset_name.endswith("reg"):
-		y_train, y_test = data['train']['y_reg'].astype(int), data['test']['y_reg']
+		# TODO int or float for regression task???
+		y_train, y_test = data['train']['y_reg'].astype(float), data['test']['y_reg'].astype(float)
 
 	return X_train, X_test, y_train, y_test
 
