@@ -6,13 +6,13 @@ def get_feature_mask(segments,series_length):
 	feature_mask = torch.zeros((1,len(segments),series_length ))
 	n_segment = 0
 	for n_ch, ch_segments in enumerate(segments):
-		prev_id = 0
 		current_segments = ch_segments.tolist()
 		current_segments.append(series_length)
-		for chp in current_segments:
-			feature_mask[0,n_ch, prev_id:chp] = n_segment
+		for i in range( len(current_segments) - 1):
+			start = current_segments[i]
+			end = current_segments[i+1]
+			feature_mask[0,n_ch, start:end ] = n_segment
 			n_segment+=1
-			prev_id = chp
 
 	assert  (feature_mask<0).sum() == 0
 
