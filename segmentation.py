@@ -28,6 +28,9 @@ def get_claSP_segmentation(X):
 
 		# it seems that they are not sorted
 		found_cps.sort()
+		if found_cps[0]!=0:
+			found_cps = np.append(0,found_cps)
+
 		result.append( found_cps )
 
 	result.append( [] )
