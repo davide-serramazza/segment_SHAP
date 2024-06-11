@@ -26,6 +26,7 @@ def main(args):
 
     # for each explanation and for each mask
     for k in explanations['attributions'].keys():
+
         #TODO should we also consider the random explanation?
         for nt in  ["normal_distribution","zeros","global_mean","local_mean","global_gaussian","local_gaussian"]:
             print("assessing ", k)
@@ -39,6 +40,7 @@ def main(args):
                     encoder=explanations['label_mapping'],
                         data_dict = test_set_dict, device=device )
 
+            # TODO check whether to run out of or in the loop
             _ = manipulation_results.compute_scores_wrapper( all_qfeatures, k, attributions)
             manipulation_results.create_summary(k)
 
