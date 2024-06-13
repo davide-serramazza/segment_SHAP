@@ -52,6 +52,9 @@ class Trainer():
 		mean_accuracy = 0.0
 		tot_out = []
 
+		if not training:
+			self.model.eval()
+
 		for i, batch_data in enumerate(data_loader):
 
 			# get data, run forward
@@ -79,27 +82,31 @@ class Trainer():
 
 		return tot_out, mean_loss, mean_accuracy
 
-	def train(self, train_loader, test_loader, n_epochs=100, n_epochs_stop=30):
+	def train(self, train_loader, test_loader, model_path, n_epochs=100, n_epochs_stop=30):
 
 		def print_stats():
 			print('Epoch {}: train loss: {: .3f}, \t train accuracy {: .3f} \n'
 			      '          test loss: {: .3f},  \t test accuracy {: .3f}'.format(
-				epoch + 1, train_loss, train_accuracy, test_loss, current_test_accuracy,
+				epoch + 1, train_loss, train_accuracy, best_test_loss, best_test_accuracy,
 			))
 
+		# variable to be used
 		best_test_accuracy = 0.0
+		best_test_loss = np.inf
 		non_improving_epochs = 0
 
 		for epoch in range(n_epochs):
-			# train
-			out, train_loss, train_accuracy = self.forward_epoch(train_loader, training=True)
 
-			# test
+			# train and test
+			out, train_loss, train_accuracy = self.forward_epoch(train_loader, training=True)
 			test_out, test_loss, current_test_accuracy = self.test(test_loader)
 
 			# early stopping
 			if current_test_accuracy > best_test_accuracy:
+				# TODO do i need all these test_out as in .test or in .fowrard_epoch?
+				torch.save(self.model, model_path)
 				best_test_accuracy = current_test_accuracy
+				best_test_loss = test_loss
 				non_improving_epochs = 0
 			else:
 				non_improving_epochs += 1

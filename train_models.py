@@ -71,14 +71,17 @@ def train_ResNet(X_train, y_train, X_test, y_test, dataset_name, device):
 	# get pytorch data loader
 	train_loader = DataLoader(TSDataset(X_train, y_train), batch_size=32, shuffle=True)
 	test_loader = DataLoader(TSDataset(X_test, y_test), batch_size=32, shuffle=False)
+
+	# train resNet
 	trainer = Trainer(model=clf)
-
 	print("training ResNet")
-	outs, acc = trainer.train(n_epochs=100, train_loader=train_loader, test_loader=test_loader, n_epochs_stop=30)
-	preds = torch.argmax(outs, dim=-1).detach().cpu().numpy()
-	print("accuracy for resNet is ", acc.item())
+	model_pah = "trained_models/resNet_" + dataset_name + ".pt"
+	outs, acc = trainer.train(n_epochs=100, train_loader=train_loader,model_path=model_pah,
+	                          test_loader=test_loader, n_epochs_stop=30)
 
-	if dataset_name is not None:
-		torch.save(clf, "trained_models/resNet_" + dataset_name + ".pt")
+	# load best model from disk (early stopping)
+	clf = torch.load(model_pah)
+	preds = clf(test_loader.dataset.samples).detach().cpu().numpy()
+	print("accuracy for resNet is ", acc.item())
 
 	return clf, preds
