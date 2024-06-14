@@ -82,7 +82,7 @@ class Trainer():
 
 		return tot_out, mean_loss, mean_accuracy
 
-	def train(self, train_loader, test_loader, model_path, n_epochs=100, n_epochs_stop=30):
+	def train(self, train_loader, test_loader, model_path, n_epochs=150, n_epochs_stop=50):
 
 		def print_stats():
 			print('Epoch {}: train loss: {: .3f}, \t train accuracy {: .3f} \n'

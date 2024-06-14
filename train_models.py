@@ -69,15 +69,15 @@ def train_ResNet(X_train, y_train, X_test, y_test, dataset_name, device):
 	clf = ResNetBaseline(in_channels=c_in, mid_channels=64, num_pred_classes=c_out).to(device)
 
 	# get pytorch data loader
-	train_loader = DataLoader(TSDataset(X_train, y_train), batch_size=32, shuffle=True)
-	test_loader = DataLoader(TSDataset(X_test, y_test), batch_size=32, shuffle=False)
+	train_loader = DataLoader(TSDataset(X_train, y_train,device=device), batch_size=32, shuffle=True)
+	test_loader = DataLoader(TSDataset(X_test, y_test, device=device), batch_size=32, shuffle=False)
 
 	# train resNet
 	trainer = Trainer(model=clf)
 	print("training ResNet")
 	model_pah = "trained_models/resNet_" + dataset_name + ".pt"
-	outs, acc = trainer.train(n_epochs=100, train_loader=train_loader,model_path=model_pah,
-	                          test_loader=test_loader, n_epochs_stop=30)
+	outs, acc = trainer.train(n_epochs=150, train_loader=train_loader,model_path=model_pah,
+	                          test_loader=test_loader, n_epochs_stop=50)
 
 	# load best model from disk (early stopping)
 	clf = torch.load(model_pah)

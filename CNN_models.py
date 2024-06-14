@@ -17,7 +17,6 @@ from torch.utils import data
 
 class TSDataset(data.Dataset):
 	def __init__(self,x_train,labels, device="cpu"):
-		device = "cuda" if torch.cuda.is_available() else "cpu"
 
 		self.samples = torch.tensor(x_train).type(torch.float32).to(device)
 		self.labels = torch.tensor(labels).to(device)

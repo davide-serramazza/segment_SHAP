@@ -35,8 +35,6 @@ from .method_arguments import dict_method_arguments
 from os.path import isfile
 from joblib import dump, load
 
-global device
-device = torch.device("cuda:0") if torch.cuda.is_available() else torch.device("cpu")
 warnings.simplefilter(action="ignore", category=FutureWarning)
 #from pytorch_utils import load_ConvTran
 #from utils import gen_cube
@@ -235,9 +233,7 @@ class ScoreComputation:
             self.model.to(device_interpretability)
         else:
             device_interpretability = (
-                torch.device("cuda:0")
-                if torch.cuda.is_available()
-                else torch.device("cpu")
+                self.device
             )
             self.model.to(device_interpretability)
 
@@ -415,9 +411,7 @@ class ScoreComputation:
             dict_method_arguments[method_relevance]["noback_cudnn"]
         ):
             device = (
-                torch.device("cuda:0")
-                if torch.cuda.is_available()
-                else torch.device("cpu")
+                self.device
             )
             self.model.to(device)
 
@@ -580,8 +574,8 @@ class ScoreComputation:
         #TODO only work for random at the moment!
 
         if self.model_output=="probabilities":
-            self.model.to(device)
-            fwd_function = lambda x : self.model(x.type(torch.float32).to(device)).detach().cpu().numpy()
+            self.model.to(self.device)
+            fwd_function = lambda x : self.model(x.type(torch.float32).to(self.device)).detach().cpu().numpy()
         elif self.model_output=="probabilities_aeon":
             fwd_function = lambda x : self.model(x)
         nb_sample = min(signal.shape[0], 50)
@@ -589,7 +583,7 @@ class ScoreComputation:
             # return baseline as zeros
             baseline = torch.zeros(s[:1].shape)
             expected_value = (
-                self.model(baseline.type(torch.float32).to(device))
+                self.model(baseline.type(torch.float32).to(self.device))
                 .detach()
                 .cpu()
                 .numpy()
@@ -607,7 +601,7 @@ class ScoreComputation:
             # return baseline as mean of signal
             baseline = torch.mean(s, dim=0)
             expected_value = (
-                self.model(baseline[None].type(torch.float32).to(device))
+                self.model(baseline[None].type(torch.float32).to(self.device))
                 .detach()
                 .cpu()
                 .numpy()
@@ -627,13 +621,13 @@ class ScoreComputation:
                 np.save(pj(self.save_results, "sample_baseline.npy"), baseline)
 
             batched_signal = np.array_split(baseline, np.ceil(baseline.shape[0] / 16))
-            pred = torch.tensor([], device=device)
+            pred = torch.tensor([], device=self.device)
             for sample in batched_signal:
                 with torch.no_grad():
                     pred = torch.cat(
                         (
                             pred,
-                            self.model(sample.type(torch.float32).to(device)),
+                            self.model(sample.type(torch.float32).to(self.device)),
                         ),
                         0,
                     )
@@ -988,7 +982,7 @@ class ScoreComputation:
             modified signal as well as diff and metric_score metric
         """
         if self.model_output=="probabilities":
-            self.model.to(device)
+            self.model.to(self.device)
         required_columns = [
             "score1",
             "score2",
@@ -1021,10 +1015,10 @@ class ScoreComputation:
 
         if self.model_output=="probabilities":
 
-            score2 = torch.tensor([], device=device, requires_grad=False)
-            score3 = torch.tensor([], device=device, requires_grad=False)
+            score2 = torch.tensor([], device=self.device, requires_grad=False)
+            score3 = torch.tensor([], device=self.device, requires_grad=False)
 
-            fwd_function = lambda x : self.model(torch.Tensor(x.astype(np.float32)).to(device))
+            fwd_function = lambda x : self.model(torch.Tensor(x.astype(np.float32)).to(self.device))
             cat_function = lambda x1,x2 : torch.cat((x1,x2),dim=0)
             to_numpy = lambda x : x.detach().cpu().numpy()
             argmax = lambda x : torch.argmax(x,dim=-1)
@@ -1188,9 +1182,9 @@ class ScoreComputation:
 
             # variables and functions for classification, torch models
             # defining data structures
-            score_pred = torch.tensor([], device=device, requires_grad=False)
+            score_pred = torch.tensor([], device=self.device, requires_grad=False)
             # defining functions
-            fwd_function = lambda x : self.model(torch.Tensor(x.astype(np.float32)).to(device))
+            fwd_function = lambda x : self.model(torch.Tensor(x.astype(np.float32)).to(self.device))
             cat_function = lambda x1,x2 : torch.cat((x1,x2),dim=0)
             zeros_like = lambda x : torch.zeros_like(x)
             argmax = lambda x : torch.argmax(x,dim=-1)
