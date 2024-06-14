@@ -44,7 +44,7 @@ class Trainer():
 		self.model = model
 		self.criterion = criterion
 		# TODO do it better
-		self.optimizer = torch.optim.Adam(self.model.parameters(), lr=0.0001)
+		self.optimizer = torch.optim.Adam(self.model.parameters(), lr=0.001)
 
 	def forward_epoch(self, data_loader, training=False):
 
