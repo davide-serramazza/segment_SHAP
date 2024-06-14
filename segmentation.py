@@ -49,6 +49,7 @@ def ensure_begins_with_0(L):
     return L
 
 def get_NNSegment_segmentation(X, window_size=None, n_change_points=5):
+    X = X.astype(np.float64)
     n_channels, n_timepoints = X.shape
     if window_size is None:
         window_size = n_timepoints // 5 # NNSegment default
