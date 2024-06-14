@@ -23,11 +23,11 @@ def main(args):
     # load explanations
     file_name = "_".join ( (classifier_name,dataset_name) )
     explanations = np.load( os.path.join("attributions" ,file_name+".npy") ,allow_pickle=True).item()
+    # add a random explanation
+    explanations['attributions']['rand'] = np.random.normal(loc=0,scale=1,size=X_test.shape)
 
     # for each explanation and for each mask
     for k in explanations['attributions'].keys():
-
-        #TODO should we also consider the random explanation?
         for nt in  ["normal_distribution","zeros","global_mean","local_mean","global_gaussian","local_gaussian"]:
             print("assessing ", k)
 
@@ -36,16 +36,14 @@ def main(args):
             attributions = explanations['attributions'][k]
 
             # TODO consider regression case i.e. no label!
-            manipulation_results = ScoreComputation(model_path=model_path, noise_type=nt,
-                    encoder=explanations['label_mapping'],
-                        data_dict = test_set_dict, device=device )
+            manipulation_results = ScoreComputation(model_path=model_path, noise_type=nt, clf_name = classifier_name,
+                    encoder=explanations['label_mapping'], data_dict = test_set_dict, device=device )
 
             # TODO check whether to run out of or in the loop
             _ = manipulation_results.compute_scores_wrapper( all_qfeatures, k, attributions)
             manipulation_results.create_summary(k)
 
-            metrics = manipulation_results.summarise_results()
-            print( "background",k,"mask",nt,":\n",metrics)
+            manipulation_results.summarise_results()
 
             # save results and plot additional info
             #save_results_path = manipulation_results.save_results
