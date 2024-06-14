@@ -1,6 +1,11 @@
 import numpy as np
 from aeon.segmentation._clasp import ClaSPSegmenter
 import torch
+from LIMESegment.Utils.explanations import NNSegment
+from sktime.annotation.igts import InformationGainSegmentation
+from sklearn.preprocessing import MinMaxScaler 
+from sktime.annotation.ggs import GreedyGaussianSegmentation
+from sklearn.preprocessing import StandardScaler
 
 def get_feature_mask(segments,series_length):
 	feature_mask = torch.zeros((1,len(segments),series_length ))
@@ -35,3 +40,52 @@ def get_claSP_segmentation(X):
 
 	result.append( [] )
 	return  np.array(result, dtype=object)
+
+def ensure_begins_with_0(L):
+    if len(L)==0:
+        L = [0]
+    elif L[0] != 0:
+        L = [0] + L
+    return L
+
+def get_NNSegment_segmentation(X, window_size=None, n_change_points=5, **kwargs):
+    X = X.astype(np.float64)
+    n_channels, n_timepoints = X.shape
+    if window_size is None:
+        window_size = n_timepoints // 5 # NNSegment default
+    change_points_per_channel = [ensure_begins_with_0(NNSegment(channel, window_size=window_size, change_points=n_change_points, **kwargs)) for channel in X]
+    change_points_per_channel = np.array(change_points_per_channel, dtype = object)
+    return change_points_per_channel
+
+def get_equal_segmentation(X, n_segments=5):
+    n_channels, n_timepoints = X.shape
+    segment_length = n_timepoints / n_segments
+    change_points = np.array(np.round(np.arange(n_segments) * segment_length), dtype=int)
+    change_points_per_channel = np.tile(change_points, (n_channels, 1))
+    return change_points_per_channel
+
+def labels_to_changepoints(labels):
+    labels = np.array(labels, dtype=int)
+    keys = (labels[:-1] != labels[1:])
+    change_points = np.append(0, np.arange(1, len(labels))[keys])
+    return change_points
+
+def get_InformationGain_segmentation(X, n_change_points: int = 5, step: int = 5):
+    n_channels, n_timepoints = X.shape
+    igts = InformationGainSegmentation(k_max=n_change_points, step=step) 
+    X = X.T
+    X_scaled = MinMaxScaler(feature_range=(0, 1)).fit_transform(X) 
+    segmentation_labels = igts.fit_predict(X_scaled) 
+    change_points = labels_to_changepoints(segmentation_labels)
+    change_points_per_channel = np.tile(change_points, (n_channels, 1))
+    return change_points_per_channel
+
+def get_GreedyGaussian_segmentation(X, n_change_points: int = 5, **kwargs):
+    n_channels, n_timepoints = X.shape
+    ggs = GreedyGaussianSegmentation(k_max=n_change_points, **kwargs) 
+    X = X.T
+    X_scaled = StandardScaler().fit_transform(X) 
+    segmentation_labels = ggs.fit_predict(X_scaled) 
+    change_points = labels_to_changepoints(segmentation_labels)
+    change_points_per_channel = np.tile(change_points, (n_channels, 1))
+    return change_points_per_channel
