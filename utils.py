@@ -121,3 +121,24 @@ class Trainer():
 			test_out, test_loss, test_accuracy = self.forward_epoch(test_loader, training=False)
 
 		return test_out, test_loss, test_accuracy
+
+def change_points_to_lengths(change_points, array_length):
+    # change points is 1D iterable of idxs
+    # assumes that each change point is the start of a new segment, aka change_points = start points
+    start_points = np.array(change_points)
+    end_points = np.append(change_points[1:], [array_length])
+    print(start_points, end_points)
+    lengths = end_points - start_points
+    return lengths
+
+def lengths_to_weights(lengths):
+    # lengths is 1D iterable of positive ints
+    start_idx = 0
+    end_idx = 0
+    segment_weights = 1 / lengths
+    weights = np.ones(lengths.sum())
+    for segment_weight, length in zip(segment_weights, lengths):
+        end_idx += length
+        weights[start_idx: end_idx] = segment_weight
+        start_idx = end_idx
+    return weights
