@@ -127,7 +127,7 @@ def change_points_to_lengths(change_points, array_length):
     # assumes that each change point is the start of a new segment, aka change_points = start points
     start_points = np.array(change_points)
     end_points = np.append(change_points[1:], [array_length])
-    print(start_points, end_points)
+    #print(start_points, end_points)
     lengths = end_points - start_points
     return lengths
 
