@@ -19,7 +19,7 @@ class TSDataset(data.Dataset):
 	def __init__(self,x_train,labels, device="cpu"):
 
 		self.samples = torch.tensor(x_train).type(torch.float32).to(device)
-		self.labels = torch.tensor(labels).to(device)
+		self.labels = torch.tensor(labels).to(torch.long).to(device)
 
 	def __len__(self):
 		return len(self.samples)

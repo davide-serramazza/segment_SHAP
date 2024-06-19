@@ -30,8 +30,8 @@ def train_randomForest(X_train, y_train, X_test, y_test, dataset_name):
 
 
 def train_miniRocket(X_train, y_train, X_test, y_test, dataset_name):
-	clf = make_pipeline(MiniRocketMultivariate(n_jobs=-1), StandardScaler(),
-	                    LogisticRegressionCV(max_iter=200, n_jobs=-1, ))
+	clf = make_pipeline(MiniRocketMultivariate(n_jobs= -1), StandardScaler(),
+	                    LogisticRegressionCV(max_iter=200, n_jobs= -1 ))
 
 	print("training miniRocket")
 	clf.fit(X_train, y_train)
