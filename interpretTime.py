@@ -27,9 +27,9 @@ def main(args):
     explanations['attributions']['rand'] = np.random.normal(loc=0,scale=1,size=X_test.shape)
 
     # for each explanation and for each mask
-    for k in explanations['attributions'].keys():
-        for nt in  ["normal_distribution","zeros","global_mean","local_mean","global_gaussian","local_gaussian"]:
-            print("assessing ", k)
+    for nt in  ["normal_distribution","zeros","global_mean","local_mean","global_gaussian","local_gaussian"]:
+        for k in explanations['attributions'].keys():
+            print("assessing ", k, "using",nt)
 
             # load model and explanations to access
             model_path = os.path.join("trained_models", file_name)
@@ -39,11 +39,10 @@ def main(args):
             manipulation_results = ScoreComputation(model_path=model_path, noise_type=nt, clf_name = classifier_name,
                     encoder=explanations['label_mapping'], data_dict = test_set_dict, device=device )
 
-            # TODO check whether to run out of or in the loop
             _ = manipulation_results.compute_scores_wrapper( all_qfeatures, k, attributions)
             manipulation_results.create_summary(k)
 
-            manipulation_results.summarise_results()
+        manipulation_results.summarise_results()
 
             # save results and plot additional info
             #save_results_path = manipulation_results.save_results
