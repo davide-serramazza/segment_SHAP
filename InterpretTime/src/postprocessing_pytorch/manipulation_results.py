@@ -163,8 +163,8 @@ class ScoreComputation:
     """
 
     def __init__(
-        self, model_path, noise_type, clf_name, data_dict,encoder, device="cpu",model_output="probabilities",
-            plot_signal=False, batch_size=32
+        self, model_path,  clf_name ,background  , result_type  ,noise_type,data_dict, encoder,
+            device="cpu",model_output="probabilities",plot_signal=False, batch_size=32
     ):
 
         self.model_path = model_path
@@ -179,7 +179,7 @@ class ScoreComputation:
         self.noise_type = noise_type
 
         self.save_results = os.path.join(
-            results_interp_path, self.name , clf_name , noise_type, "interpretability_results"
+            results_interp_path, self.name , clf_name , background,result_type, noise_type, "interpretability_results"
         )
 
         if not os.path.exists(self.save_results):

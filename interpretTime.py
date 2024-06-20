@@ -22,27 +22,56 @@ def main(args):
 
     # load explanations
     file_name = "_".join ( (classifier_name,dataset_name) )
-    explanations = np.load( os.path.join("attributions" ,file_name+".npy") ,allow_pickle=True).item()
+    # TODO hardcoded!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! dataset name in the attributions file!
+    explanations = np.load("attributions/all_results_resNet.npy", allow_pickle=True).item()
+    #explanations = np.load( os.path.join("attributions" ,file_name+".npy") ,allow_pickle=True).item()
     # add a random explanation
-    explanations['attributions']['rand'] = np.random.normal(loc=0,scale=1,size=X_test.shape)
+
+    #TODO hardcoede!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    ks = list(explanations[dataset_name].keys())
+    ks.remove('y_test_true') ; ks.remove('label_mapping')  ; ks.append('random')     #explanations[dataset_name][ks[1]][classifier_name]['attributions']
+    # add random exp
+    rand = np.random.normal(loc=0,scale=1,size=X_test.shape)
+    explanations[dataset_name]['random'] = {
+        classifier_name:{
+            'attributions' :
+                {
+                    'zero':     {'default': rand, 'normalized':rand},
+                    'average':  {'default': rand, 'normalized':rand},
+                    'sampling':  {'default': rand, 'normalized':rand},
+                }
+        }
+    }
 
     # for each explanation and for each mask
+    #TODO find the more convenient oreder
+    import sys
     for nt in  ["normal_distribution","zeros","global_mean","local_mean","global_gaussian","local_gaussian"]:
-        for k in explanations['attributions'].keys():
+        for k in ks:
             print("assessing ", k, "using",nt)
 
             # load model and explanations to access
             model_path = os.path.join("trained_models", file_name)
-            attributions = explanations['attributions'][k]
+            for background in ['zero', 'average', 'sampling']:
+                for result_type in ['default', 'normalized']:
+                    print(nt);  sys.stdout.flush()
+                    print(k);    sys.stdout.flush()
+                    print(background); sys.stdout.flush()
+                    print(result_type),      sys.stdout.flush()
+                    try:
+                        attributions = explanations[dataset_name][k][classifier_name]['attributions'][background][result_type]
+                    except IndexError:
+                        a=2
 
-            # TODO consider regression case i.e. no label!
-            manipulation_results = ScoreComputation(model_path=model_path, noise_type=nt, clf_name = classifier_name,
-                    encoder=explanations['label_mapping'], data_dict = test_set_dict, device=device )
+                    # TODO consider regression case i.e. no label!
+                    manipulation_results = ScoreComputation(model_path=model_path,  clf_name = classifier_name,
+                            background = background , result_type = result_type ,noise_type=nt,
+                            encoder=explanations[dataset_name]['label_mapping'], data_dict = test_set_dict, device=device )
 
-            _ = manipulation_results.compute_scores_wrapper( all_qfeatures, k, attributions)
-            manipulation_results.create_summary(k)
+                    _ = manipulation_results.compute_scores_wrapper( all_qfeatures, k, attributions)
+                    manipulation_results.create_summary(k)
 
-        manipulation_results.summarise_results()
+                    manipulation_results.summarise_results()
 
             # save results and plot additional info
             #save_results_path = manipulation_results.save_results
