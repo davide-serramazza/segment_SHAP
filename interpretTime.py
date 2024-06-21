@@ -54,14 +54,8 @@ def main(args):
             model_path = os.path.join("trained_models", file_name)
             for background in ['zero', 'average', 'sampling']:
                 for result_type in ['default', 'normalized']:
-                    print(nt);  sys.stdout.flush()
-                    print(k);    sys.stdout.flush()
-                    print(background); sys.stdout.flush()
-                    print(result_type),      sys.stdout.flush()
-                    try:
-                        attributions = explanations[dataset_name][k][classifier_name]['attributions'][background][result_type]
-                    except IndexError:
-                        a=2
+
+                    explanations[dataset_name][k][classifier_name]['attributions'][background][result_type]
 
                     # TODO consider regression case i.e. no label!
                     manipulation_results = ScoreComputation(model_path=model_path,  clf_name = classifier_name,

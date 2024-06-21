@@ -11,7 +11,8 @@ def get_feature_mask(segments,series_length):
 	feature_mask = torch.zeros((1,len(segments),series_length ))
 	n_segment = 0
 	for n_ch, ch_segments in enumerate(segments):
-		current_segments = ch_segments.tolist()
+
+		current_segments = ch_segments.tolist() if type(ch_segments)==np.ndarray else ch_segments
 		current_segments.append(series_length)
 		for i in range( len(current_segments) - 1):
 			start = current_segments[i]
@@ -54,7 +55,7 @@ def get_NNSegment_segmentation(X, window_size=None, n_change_points=5, **kwargs)
     if window_size is None:
         window_size = n_timepoints // 5 # NNSegment default
     change_points_per_channel = [ensure_begins_with_0(NNSegment(channel, window_size=window_size, change_points=n_change_points, **kwargs)) for channel in X]
-    change_points_per_channel = np.array(change_points_per_channel, dtype = object)
+    change_points_per_channel = np.fromiter(change_points_per_channel, dtype=object)
     return change_points_per_channel
 
 def get_equal_segmentation(X, n_segments=5):
@@ -62,6 +63,7 @@ def get_equal_segmentation(X, n_segments=5):
     segment_length = n_timepoints / n_segments
     change_points = np.array(np.round(np.arange(n_segments) * segment_length), dtype=int)
     change_points_per_channel = np.tile(change_points, (n_channels, 1))
+    change_points_per_channel = np.fromiter(change_points_per_channel, dtype=object)
     return change_points_per_channel
 
 def labels_to_changepoints(labels):
@@ -78,6 +80,7 @@ def get_InformationGain_segmentation(X, n_change_points: int = 5, step: int = 5)
     segmentation_labels = igts.fit_predict(X_scaled) 
     change_points = labels_to_changepoints(segmentation_labels)
     change_points_per_channel = np.tile(change_points, (n_channels, 1))
+    change_points_per_channel = np.fromiter(change_points_per_channel, dtype=object)
     return change_points_per_channel
 
 def get_GreedyGaussian_segmentation(X, n_change_points: int = 5, **kwargs):
@@ -88,4 +91,5 @@ def get_GreedyGaussian_segmentation(X, n_change_points: int = 5, **kwargs):
     segmentation_labels = ggs.fit_predict(X_scaled) 
     change_points = labels_to_changepoints(segmentation_labels)
     change_points_per_channel = np.tile(change_points, (n_channels, 1))
+    change_points_per_channel = np.fromiter(change_points_per_channel, dtype=object)
     return change_points_per_channel
