@@ -1,82 +1,94 @@
 import os
+import pickle
+
 import numpy as np
 import torch.cuda
 import timeit
+import pandas as pd
 import argparse
+import itertools
 from load_data import  load_data
 from utils import extract_InterpretTime_info
 from InterpretTime.src.postprocessing_pytorch.manipulation_results import ScoreComputation
 from InterpretTime.src.shared_utils.utils_visualization import plot_DeltaS_results, plot_additional_results
+from copy import deepcopy
+from pickle import dump
 
-
-all_qfeatures = [0.05, 0.15, 0.25, 0.35,0.45,0.55,0.65,0.75,0.85,0.95,1.0]
 
 def main(args):
 
     dataset_name = args.datasets
     classifier_name = args.classifier
+    demo_mode = args.demo_mode
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
+    all_qfeatures = [0.05 ,1.0] if args.demo_mode else [0.05, 0.15, 0.25, 0.35,0.45,0.55,0.65,0.75,0.85,0.95,1.0]
+
     X_train, X_test, y_train, y_test, enc = load_data(subset='all', dataset_name=dataset_name)
+    if demo_mode:
+        X_test, y_test = X_test[:2], y_test[:2]
     test_set_dict = extract_InterpretTime_info(X_test, X_train, dataset_name, y_test, y_train)
 
     # load explanations
     file_name = "_".join ( (classifier_name,dataset_name) )
-    # TODO hardcoded!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! dataset name in the attributions file!
-    explanations = np.load("attributions/all_results_resNet.npy", allow_pickle=True).item()
-    #explanations = np.load( os.path.join("attributions" ,file_name+".npy") ,allow_pickle=True).item()
-    # add a random explanation
+    attribution_name = "_".join( ("all_results",dataset_name,classifier_name) ) + ".npy"
+    explanations = np.load(os.path.join("attributions",attribution_name), allow_pickle=True).item()
 
-    #TODO hardcoede!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    ks = list(explanations[dataset_name].keys())
-    ks.remove('y_test_true') ; ks.remove('label_mapping')  ; ks.append('random')     #explanations[dataset_name][ks[1]][classifier_name]['attributions']
-    # add random exp
-    rand = np.random.normal(loc=0,scale=1,size=X_test.shape)
-    explanations[dataset_name]['random'] = {
-        classifier_name:{
-            'attributions' :
-                {
-                    'zero':     {'default': rand, 'normalized':rand},
-                    'average':  {'default': rand, 'normalized':rand},
-                    'sampling':  {'default': rand, 'normalized':rand},
-                }
-        }
-    }
+    # get infos about which explanations are evaluated
+    datasets = list( explanations['attributions'].keys() )
+    segmentations = list( explanations['attributions'][datasets[0]].keys() )
+    predictors = list( explanations['attributions'][datasets[0]][segmentations[0]] .keys() )
+    backgrounds = list( explanations['attributions'][datasets[0]][segmentations[0]][predictors[0]].keys() )
+    result_types = ['default','normalized']
+    masks = ["normal_distribution","zeros","global_mean","local_mean","global_gaussian","local_gaussian"]
 
-    # for each explanation and for each mask
-    #TODO find the more convenient oreder
-    import sys
-    for nt in  ["normal_distribution","zeros","global_mean","local_mean","global_gaussian","local_gaussian"]:
-        for k in ks:
-            print("assessing ", k, "using",nt)
+    # TODO get rid of the nested dictionary in favor of the MultiIndex
+    results_dict = deepcopy(explanations['attributions'])
+    def clean(d):
+        for k in d.keys():
+            if type( d[k] )==np.ndarray:
+                d[k] = dict.fromkeys( masks )
+            else:
+                clean(d[k])
+    clean(results_dict)
+    #index = pd.MultiIndex.from_product( list([datasets,segmentations, predictors,backgrounds, result_types, masks] ),names=["datasets","segmentations","predictors","backgrounds","result_types","masks"] )
+    #df = pd.DataFrame(np.random.randn(3, 8), index=["A", "B", "C"], columns=index)
 
-            # load model and explanations to access
-            model_path = os.path.join("trained_models", file_name)
-            for background in ['zero', 'average', 'sampling']:
-                for result_type in ['default', 'normalized']:
+    for it in itertools.product(datasets,segmentations,predictors,backgrounds,result_types,masks):
+        dataset,segmentation,predictor,background,result_type,mask = it
+        print("assessing ", it[:-1], "using",mask)
 
-                    explanations[dataset_name][k][classifier_name]['attributions'][background][result_type]
+        # load model and explanations to access
+        model_path = os.path.join("trained_models", file_name)
+        attributions = explanations['attributions'][dataset][segmentation][predictor][background][result_type]
 
-                    # TODO consider regression case i.e. no label!
-                    manipulation_results = ScoreComputation(model_path=model_path,  clf_name = classifier_name,
-                            background = background , result_type = result_type ,noise_type=nt,
-                            encoder=explanations[dataset_name]['label_mapping'], data_dict = test_set_dict, device=device )
+        # TODO consider regression case i.e. no label!
+        isRF = classifier_name=="randomForest"
+        result_path = os.path.join(dataset,segmentation,predictor,background,result_type,mask)
+        manipulation_results = ScoreComputation(model_path=model_path, result_path=result_path ,noise_type=mask,
+            randomForest=isRF, encoder=explanations['label_mapping'][dataset], data_dict = test_set_dict, device=device)
 
-                    _ = manipulation_results.compute_scores_wrapper( all_qfeatures, k, attributions)
-                    manipulation_results.create_summary(k)
+        manipulation_results.compute_scores_wrapper( all_qfeatures, segmentation, attributions)
+        manipulation_results.create_summary(segmentation)
 
-                    manipulation_results.summarise_results()
+        current_result = manipulation_results.summarise_results()
+        results_dict[dataset][segmentation][predictor][background][result_type][mask] = current_result
 
-            # save results and plot additional info
-            #save_results_path = manipulation_results.save_results
-            #plot_DeltaS_results(save_results_path)
-            #plot_additional_results(save_results_path)
+        # save results and plot additional info
+        #save_results_path = manipulation_results.save_results
+        #plot_DeltaS_results(save_results_path)
+        #plot_additional_results(save_results_path)
 
+    # TODO replace with multiIndex pandas
+    with open( "_".join( ("dict_result",dataset_name,classifier_name)) ,"wb") as f:
+        pickle.dump(results_dict,f)
 
 
 if __name__ == "__main__" :
     parser = argparse.ArgumentParser()
     parser.add_argument("datasets", type=str, help="which dataset to be used")
     parser.add_argument("classifier", type=str, help="which predictor to be explained")
+    parser.add_argument("demo_mode", type=str, nargs='?', help="whether demo mode i.e. only two samples")
     args = parser.parse_args()
+    args.demo_mode = True if args.demo_mode is not None and args.demo_mode.lower() =="true" else False
     main(args)

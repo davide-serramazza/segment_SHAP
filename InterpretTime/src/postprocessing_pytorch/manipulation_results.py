@@ -163,8 +163,8 @@ class ScoreComputation:
     """
 
     def __init__(
-        self, model_path,  clf_name ,background  , result_type  ,noise_type,data_dict, encoder,
-            device="cpu",model_output="probabilities",plot_signal=False, batch_size=32
+        self, model_path, result_path  ,noise_type,data_dict, encoder,
+            device="cpu",model_output="probabilities",plot_signal=False, batch_size=32, randomForest=False,
     ):
 
         self.model_path = model_path
@@ -179,7 +179,7 @@ class ScoreComputation:
         self.noise_type = noise_type
 
         self.save_results = os.path.join(
-            results_interp_path, self.name , clf_name , background,result_type, noise_type, "interpretability_results"
+            results_interp_path,result_path , "interpretability_results"
         )
 
         if not os.path.exists(self.save_results):
@@ -188,6 +188,7 @@ class ScoreComputation:
         # my part
         self.device = device
         self.batch_size = batch_size
+        self.isRandomForest = randomForest
 
         # check whether the dump is a joblilb one ( sklearn-like classifier) or torch one
         if isfile(self.model_path+".pt"):
@@ -577,7 +578,8 @@ class ScoreComputation:
             self.model.to(self.device)
             fwd_function = lambda x : self.model(x.type(torch.float32).to(self.device)).detach().cpu().numpy()
         elif self.model_output=="probabilities_aeon":
-            fwd_function = lambda x : self.model(x)
+            fwd_function = lambda x : self.model( x.reshape(x.shape[0],-1).astype(np.float32) ) if self.isRandomForest \
+                else self.model(x.astype(np.float32))
         nb_sample = min(signal.shape[0], 50)
         if type_baseline == "zeros":
             # return baseline as zeros
@@ -1029,10 +1031,12 @@ class ScoreComputation:
             score2 = np.array( [] ).reshape(0, self.encoder.shape[0] )
             score3 = np.array( [] ).reshape(0, self.encoder.shape[0] )
 
-            fwd_function = lambda x : self.model(x.astype(np.float32))
+            fwd_function = lambda x : self.model( x.reshape(x.shape[0],-1).astype(np.float32) ) if self.isRandomForest \
+                else  self.model(x.astype(np.float32))
             cat_function = lambda x1,x2 : np.concatenate( (x1,x2), axis=0)
             to_numpy = lambda x : x
             argmax = lambda x : np.argmax(x,axis=-1)
+
         for sample in batched_sample:
             with torch.no_grad():
                 score2 = cat_function(
@@ -1104,6 +1108,7 @@ class ScoreComputation:
         df_metrics.to_csv(
             os.path.join(self.save_results, "metrics_methods.csv")
         )
+        return df_metrics
 
     def label_nounIdx(self,batch_size):
         #['noun_id' 'label' 'pred' 'score_x0_-1.0' 'score_x0_1.0']
@@ -1196,7 +1201,8 @@ class ScoreComputation:
             # defining data structures
             score_pred = np.array( [] ).reshape(0, encoder.shape[0] )
             # defining functions
-            fwd_function = lambda x : self.model(x.astype(np.float32))
+            fwd_function = lambda x : self.model( x.reshape(x.shape[0],-1).astype(np.float32) ) if self.isRandomForest \
+                else self.model(x.astype(np.float32))
             cat_function = lambda x1,x2 : np.concatenate( (x1,x2), axis=0)
             zeros_like = lambda x : np.zeros_like(x)
             argmax = lambda x : np.argmax(x,axis=-1)
