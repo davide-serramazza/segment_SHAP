@@ -1,6 +1,7 @@
 import numpy as np
 import torch
 import pandas as pd
+from copy import deepcopy
 
 def forward_classification(X_test: torch.Tensor, model):
 
@@ -34,6 +35,18 @@ def extract_InterpretTime_info(X_test, X_train, dataset_name, y_test, y_train):
 	                 }
 
 	return test_set_dict
+
+def intantiate_dict_results(explanations, masks):
+	def clean(d):
+		for k in d.keys():
+			if type( d[k] )==np.ndarray:
+				d[k] = dict.fromkeys( masks )
+			else:
+				clean(d[k])
+
+	results_dict = deepcopy(explanations['attributions'])
+	clean(results_dict)
+	return results_dict
 
 
 class Trainer():
