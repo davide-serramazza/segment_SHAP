@@ -54,6 +54,7 @@ def main(args):
     #index = pd.MultiIndex.from_product( list([datasets,segmentations, predictors,backgrounds, result_types, masks] ),names=["datasets","segmentations","predictors","backgrounds","result_types","masks"] )
     #df = pd.DataFrame(np.random.randn(3, 8), index=["A", "B", "C"], columns=index)
 
+
     for it in itertools.product(datasets,segmentations,predictors,backgrounds,result_types,masks):
         dataset,segmentation,predictor,background,result_type,mask = it
         print("assessing ", it[:-1], "using",mask)

@@ -1,13 +1,12 @@
 import numpy as np
 import torch
-from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
-from joblib import dump, load
+from sklearn.ensemble import RandomForestClassifier
+from joblib import dump
 from aeon.transformations.collection.convolution_based import MiniRocketMultivariate
-from sklearn.linear_model import LinearRegression, LogisticRegressionCV
+from sklearn.linear_model import LogisticRegressionCV
 from sklearn.preprocessing import StandardScaler
 from sklearn.pipeline import make_pipeline
 from CNN_models import ResNetBaseline, TSDataset
-from torch.cuda import is_available as is_GPU_available
 from torch.utils.data import DataLoader
 from utils import Trainer
 from aeon.classification.interval_based import QUANTClassifier
