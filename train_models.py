@@ -2,10 +2,7 @@ import numpy as np
 import torch
 from sklearn.ensemble import RandomForestClassifier
 from joblib import dump
-from aeon.transformations.collection.convolution_based import MiniRocketMultivariate
-from sklearn.linear_model import LogisticRegressionCV
-from sklearn.preprocessing import StandardScaler
-from sklearn.pipeline import make_pipeline
+from aeon.classification.convolution_based import RocketClassifier
 from CNN_models import ResNetBaseline, TSDataset
 from torch.utils.data import DataLoader
 from utils import Trainer
@@ -29,9 +26,8 @@ def train_randomForest(X_train, y_train, X_test, y_test, dataset_name):
 
 
 def train_miniRocket(X_train, y_train, X_test, y_test, dataset_name):
-	clf = make_pipeline(MiniRocketMultivariate(n_jobs= 8), StandardScaler(),
-	                    LogisticRegressionCV(max_iter=200, n_jobs= -1 ))
 
+	clf = RocketClassifier(rocket_transform='miniRocket')
 	print("training miniRocket")
 	clf.fit(X_train, y_train)
 	score = clf.score(X_test, y_test)
@@ -60,6 +56,7 @@ def train_QUANT(X_train, y_train, X_test, y_test, dataset_name):
 
 
 def train_ResNet(X_train, y_train, X_test, y_test, dataset_name, device):
+
 	# get  number of in channel (c_in) , last layer output (c_out)
 	c_in = X_train.shape[1]
 	c_out = len(np.unique(y_train))
