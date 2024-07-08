@@ -67,9 +67,10 @@ def main(args):
         # store results in the nested data structure
         current_result = manipulation_results.summarise_results()
         results_dict[dataset][segmentation][predictor][background][result_type][mask] = {
-            'AUCSE_top' : current_result['AUCSE_top'][segmentation],
-            'F_score' : current_result['F_score'][segmentation]
+            'AUCSE_top' : current_result['AUCSE_top'][segmentation].item(),
+            'F_score' : current_result['F_score'][segmentation].item()
         }
+        print( current_result['AUCSE_top'][segmentation].item(), current_result['F_score'][segmentation].item())
         # save results and plot additional info
         #save_results_path = manipulation_results.save_results
         #plot_DeltaS_results(save_results_path)
