@@ -12,7 +12,7 @@ def get_feature_mask(segments,series_length):
 	n_segment = 0
 	for n_ch, ch_segments in enumerate(segments):
 
-		current_segments = ch_segments.tolist() if type(ch_segments)==np.ndarray else ch_segments
+		current_segments = ch_segments.tolist()
 		current_segments.append(series_length)
 		for i in range( len(current_segments) - 1):
 			start = current_segments[i]
@@ -55,7 +55,7 @@ def get_NNSegment_segmentation(X, window_size=None, n_change_points=5, **kwargs)
     if window_size is None:
         window_size = n_timepoints // 5 # NNSegment default
     change_points_per_channel = [ensure_begins_with_0(NNSegment(channel, window_size=window_size, change_points=n_change_points, **kwargs)) for channel in X]
-    change_points_per_channel = np.fromiter(change_points_per_channel, dtype=object)
+    change_points_per_channel = np.fromiter([np.array(current_seg) for current_seg in change_points_per_channel], dtype=object)
     return change_points_per_channel
 
 def get_equal_segmentation(X, n_segments=5):
