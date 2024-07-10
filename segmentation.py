@@ -26,10 +26,11 @@ def get_feature_mask(segments,series_length):
 
 def get_claSP_segmentation(X):
 	result = []
+	clasp = ClaSPSegmenter(n_cps=6, period_length=5)
+
 	for ch in range(X.shape[0]):
 
 		uts = X[ch]
-		clasp = ClaSPSegmenter(n_cps=6, period_length=3)        # for gun point, actually best for both!
 		found_cps, profiles, scores = clasp._run_clasp(uts)
 
 		# it seems that they are not sorted

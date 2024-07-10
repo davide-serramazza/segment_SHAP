@@ -124,7 +124,7 @@ class Trainer():
 			else:
 				non_improving_epochs += 1
 
-			if non_improving_epochs == n_epochs_stop:
+			if non_improving_epochs == n_epochs_stop or best_test_accuracy==1.0:
 				print("training early stopped! Final stats are:")
 				print_stats()
 				break
