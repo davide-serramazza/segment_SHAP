@@ -1,6 +1,7 @@
 import numpy as np
 from sklearn.preprocessing import LabelEncoder
 from aeon.datasets import load_gunpoint as load_gunpoint
+from aeon.datasets import load_from_tsfile
 import pandas as pd
 
 def load_data(subset, dataset_name):
@@ -31,6 +32,11 @@ def load_data(subset, dataset_name):
 
 	elif dataset_name.startswith("synth"):
 		X_train, X_test, y_train, y_test= load_synth_data(dataset_name)
+
+	elif dataset_name == "MP":
+		X_train, y_train = load_from_tsfile("datasets/MilitaryPress/TRAIN_full_X.ts")
+		X_test, y_test = load_from_tsfile("datasets/MilitaryPress/TEST_full_X.ts")
+		X_train ,X_test = X_train.astype(np.float32), X_test.astype(np.float32),
 
 	le = LabelEncoder()
 	y_train = le.fit_transform(y_train)
