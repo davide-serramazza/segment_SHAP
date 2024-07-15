@@ -33,10 +33,34 @@ def load_data(subset, dataset_name):
 	elif dataset_name.startswith("synth"):
 		X_train, X_test, y_train, y_test= load_synth_data(dataset_name)
 
-	elif dataset_name == "MP":
+	elif dataset_name == "MP50":
 		X_train, y_train = load_from_tsfile("datasets/MilitaryPress/TRAIN_full_X.ts")
 		X_test, y_test = load_from_tsfile("datasets/MilitaryPress/TEST_full_X.ts")
-		X_train ,X_test = X_train.astype(np.float32), X_test.astype(np.float32),
+		X_train ,X_test = X_train.astype(np.float32), X_test.astype(np.float32)
+
+	elif dataset_name == "MP8":
+		data = np.load("datasets/MilitaryPress/MP_centered.npy", allow_pickle=True).item()
+		X_train, y_train = data["train"]["X"].astype(np.float32), data["train"]["y"]
+		X_test, y_test = data["test"]["X"].astype(np.float32), data["test"]["y"]
+
+	elif dataset_name == "EOG":
+		# load horizontal signal
+		X_train_h, y_train_h = load_from_tsfile("datasets/EOGSignal/EOGHorizontalSignal_TRAIN.ts")
+		X_test_h, y_test_h = load_from_tsfile("datasets/EOGSignal/EOGHorizontalSignal_TEST.ts")
+
+		# load vertical signal
+		X_train_v, y_train_v = load_from_tsfile("datasets/EOGSignal/EOGVerticalSignal_TRAIN.ts")
+		X_test_v, y_test_v = load_from_tsfile("datasets/EOGSignal/EOGVerticalSignal_TEST.ts")
+
+		# concatenate and convert to float32
+		X_train = np.concatenate((X_train_h, X_train_v), axis=1)
+		X_test = np.concatenate((X_test_h, X_test_v), axis=1)
+		X_train ,X_test = X_train.astype(np.float32), X_test.astype(np.float32)
+
+		# finally take labels
+		assert np.all(y_train_h == y_train_v)
+		assert np.all(y_test_h == y_test_v)
+		y_train, y_test = y_train_h, y_test_h
 
 	le = LabelEncoder()
 	y_train = le.fit_transform(y_train)

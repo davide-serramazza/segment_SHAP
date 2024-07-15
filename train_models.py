@@ -27,7 +27,7 @@ def train_randomForest(X_train, y_train, X_test, y_test, dataset_name):
 
 def train_miniRocket(X_train, y_train, X_test, y_test, dataset_name):
 
-	clf = RocketClassifier(rocket_transform='miniRocket',n_jobs=-1)
+	clf = RocketClassifier(rocket_transform='miniRocket',n_jobs=20)
 	print("training miniRocket")
 	clf.fit(X_train, y_train)
 	score = clf.score(X_test, y_test)
@@ -61,11 +61,12 @@ def train_ResNet(X_train, y_train, X_test, y_test, dataset_name, device):
 	c_in = X_train.shape[1]
 	c_out = len(np.unique(y_train))
 	# instantiate ResNet
-	clf = ResNetBaseline(in_channels=c_in, mid_channels=64, num_pred_classes=c_out).to(device)
+	clf = ResNetBaseline(in_channels=c_in, mid_channels=128, num_pred_classes=c_out).to(device)
 
 	# get pytorch data loader
-	train_loader = DataLoader(TSDataset(X_train, y_train,device=device), batch_size=32, shuffle=True)
-	test_loader = DataLoader(TSDataset(X_test, y_test, device=device), batch_size=32, shuffle=False)
+	batch_size = 32
+	train_loader = DataLoader(TSDataset(X_train, y_train,device=device), batch_size=batch_size, shuffle=True)
+	test_loader = DataLoader(TSDataset(X_test, y_test, device=device), batch_size=batch_size, shuffle=False)
 
 	# train resNet
 	trainer = Trainer(model=clf)
@@ -76,7 +77,13 @@ def train_ResNet(X_train, y_train, X_test, y_test, dataset_name, device):
 
 	# load best model from disk (early stopping)
 	clf = torch.load(model_pah, map_location=device)
-	preds = clf(test_loader.dataset.samples).detach().cpu().numpy()
+
+	# get predictions in batches
+	preds = []
+	for i in range(0,X_test.shape[0],batch_size):
+		current_test = test_loader.dataset.samples[i: min(i+batch_size,X_test.shape[0])]
+		preds.append( clf(current_test).detach().cpu().numpy() )
+	preds = np.concatenate(preds)
 	print("accuracy for resNet is ", acc.item())
 
 	return clf, preds

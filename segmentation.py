@@ -75,12 +75,17 @@ def labels_to_changepoints(labels):
 
 def get_InformationGain_segmentation(X, n_change_points: int = 5, step: int = 5):
     n_channels, n_timepoints = X.shape
-    igts = InformationGainSegmentation(k_max=n_change_points, step=step) 
+    igts = InformationGainSegmentation(k_max=n_change_points, step=step)
     X = X.T
     X_scaled = MinMaxScaler(feature_range=(0, 1)).fit_transform(X)
     if n_channels==1: # remedy univariate issue
         X_scaled = np.append(X_scaled, X_scaled.max() - X, axis=1)
-    segmentation_labels = igts.fit_predict(X_scaled) 
+
+    try:
+        segmentation_labels = igts.fit_predict(X_scaled)
+    except UnboundLocalError:
+        segmentation_labels = np.array( [0] ,  dtype=object)
+
     change_points = labels_to_changepoints(segmentation_labels)
     change_points_per_channel = np.tile(change_points, (n_channels, 1))
     change_points_per_channel = np.fromiter(change_points_per_channel, dtype=object)
