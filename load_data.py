@@ -43,6 +43,11 @@ def load_data(subset, dataset_name):
 		X_train, y_train = data["train"]["X"].astype(np.float32), data["train"]["y"]
 		X_test, y_test = data["test"]["X"].astype(np.float32), data["test"]["y"]
 
+	elif dataset_name == "ethanolLevel":
+		X_train, y_train = load_from_tsfile("datasets/EthanolLevel/EthanolLevel_TRAIN.ts")
+		X_test, y_test = load_from_tsfile("datasets/EthanolLevel/EthanolLevel_TEST.ts")
+		X_train ,X_test = X_train.astype(np.float32), X_test.astype(np.float32)
+
 	elif dataset_name == "EOG":
 		# load horizontal signal
 		X_train_h, y_train_h = load_from_tsfile("datasets/EOGSignal/EOGHorizontalSignal_TRAIN.ts")
@@ -61,6 +66,17 @@ def load_data(subset, dataset_name):
 		assert np.all(y_train_h == y_train_v)
 		assert np.all(y_test_h == y_test_v)
 		y_train, y_test = y_train_h, y_test_h
+
+	elif dataset_name == "CinECG":
+		first_split_X, first_split_y = load_from_tsfile("datasets/CinCECGTorso/CinCECGTorso_TRAIN.ts")
+		second_split_X, second_split_y = load_from_tsfile("datasets/CinCECGTorso/CinCECGTorso_TEST.ts")
+
+		to_train_set = np.random.choice(second_split_y.size, second_split_y.size-500, replace=False)
+		new_test_set = [ i for i in range(second_split_y.size) if i not in to_train_set]
+
+		X_train, y_train =  np.concatenate( (first_split_X, second_split_X[to_train_set]) ,axis=0 ), \
+							np.concatenate( (first_split_y, second_split_y[to_train_set]) ,axis=0 )
+		X_test, y_test = second_split_X[new_test_set], second_split_y[new_test_set]
 
 	le = LabelEncoder()
 	y_train = le.fit_transform(y_train)

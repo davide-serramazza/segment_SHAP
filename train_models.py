@@ -61,7 +61,7 @@ def train_ResNet(X_train, y_train, X_test, y_test, dataset_name, device):
 	c_in = X_train.shape[1]
 	c_out = len(np.unique(y_train))
 	# instantiate ResNet
-	clf = ResNetBaseline(in_channels=c_in, mid_channels=128, num_pred_classes=c_out).to(device)
+	clf = ResNetBaseline(in_channels=c_in, mid_channels=64, num_pred_classes=c_out).to(device)
 
 	# get pytorch data loader
 	batch_size = 32
