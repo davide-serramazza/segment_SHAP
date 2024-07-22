@@ -3,8 +3,9 @@ from sklearn.preprocessing import LabelEncoder
 from aeon.datasets import load_gunpoint as load_gunpoint
 from aeon.datasets import load_from_tsfile
 import pandas as pd
+import os
 
-def load_data(subset, dataset_name):
+def load_data(subset, dataset_name, path="datasets"):
 	if subset not in {'train', 'test', 'all'}:
 		raise ValueError(
 			"subset has to be  either 'train' ,'test' or 'all'"
@@ -17,8 +18,8 @@ def load_data(subset, dataset_name):
 #		)
 
 	if dataset_name == "UWAVE":
-		X_train, y_train = np.load("datasets/UWAVE/Xtr.npy"), np.load("datasets/UWAVE/Ytr.npy")
-		X_test, y_test = np.load("datasets/UWAVE/Xte.npy"), np.load("datasets/UWAVE/Yte.npy")
+		X_train, y_train = np.load(os.path.join(path, "UWAVE/Xtr.npy")), np.load(os.path.join(path, "UWAVE/Ytr.npy"))
+		X_test, y_test = np.load(os.path.join(path, "UWAVE/Xte.npy")), np.load(os.path.join(path, "UWAVE/Yte.npy"))
 
 		# channels as second dimension
 		X_train, X_test = (np.transpose(X_train, (0, 2, 1)).astype(np.float32),
@@ -34,23 +35,23 @@ def load_data(subset, dataset_name):
 		X_train, X_test, y_train, y_test= load_synth_data(dataset_name)
 
 	elif dataset_name == "MP50":
-		X_train, y_train = load_from_tsfile("datasets/MilitaryPress/TRAIN_full_X.ts")
-		X_test, y_test = load_from_tsfile("datasets/MilitaryPress/TEST_full_X.ts")
+		X_train, y_train = load_from_tsfile(os.path.join(path, "MilitaryPress/TRAIN_full_X.ts"))
+		X_test, y_test = load_from_tsfile(os.path.join(path, "MilitaryPress/TEST_full_X.ts"))
 		X_train ,X_test = X_train.astype(np.float32), X_test.astype(np.float32)
 
 	elif dataset_name == "MP8":
-		data = np.load("datasets/MilitaryPress/MP_centered.npy", allow_pickle=True).item()
+		data = np.load(os.path.join(path, "MilitaryPress/MP_centered.npy"), allow_pickle=True).item()
 		X_train, y_train = data["train"]["X"].astype(np.float32), data["train"]["y"]
 		X_test, y_test = data["test"]["X"].astype(np.float32), data["test"]["y"]
 
 	elif dataset_name == "EOG":
 		# load horizontal signal
-		X_train_h, y_train_h = load_from_tsfile("datasets/EOGSignal/EOGHorizontalSignal_TRAIN.ts")
-		X_test_h, y_test_h = load_from_tsfile("datasets/EOGSignal/EOGHorizontalSignal_TEST.ts")
+		X_train_h, y_train_h = load_from_tsfile(os.path.join(path, "EOGSignal/EOGHorizontalSignal_TRAIN.ts"))
+		X_test_h, y_test_h = load_from_tsfile(os.path.join(path, "EOGSignal/EOGHorizontalSignal_TEST.ts"))
 
 		# load vertical signal
-		X_train_v, y_train_v = load_from_tsfile("datasets/EOGSignal/EOGVerticalSignal_TRAIN.ts")
-		X_test_v, y_test_v = load_from_tsfile("datasets/EOGSignal/EOGVerticalSignal_TEST.ts")
+		X_train_v, y_train_v = load_from_tsfile(os.path.join(path, "EOGSignal/EOGVerticalSignal_TRAIN.ts"))
+		X_test_v, y_test_v = load_from_tsfile(os.path.join(path, "EOGSignal/EOGVerticalSignal_TEST.ts"))
 
 		# concatenate and convert to float32
 		X_train = np.concatenate((X_train_h, X_train_v), axis=1)

@@ -1,0 +1,3 @@
+,Dataset,Segmentation,ML model,Background,Normalization,Perturb,Metric,Result
+0,gunpoint,clasp,resNet,zero,normalized,dummy,,1.0
+1,gunpoint,clasp,resNet,zero,default,dummy,,1.0

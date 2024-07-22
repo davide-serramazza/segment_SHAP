@@ -1,3 +1,8 @@
+trained_models/
+attributions/
+datasets/
+
+
 # Created by https://www.toptal.com/developers/gitignore/api/intellij,python
 # Edit at https://www.toptal.com/developers/gitignore?templates=intellij,python
 
