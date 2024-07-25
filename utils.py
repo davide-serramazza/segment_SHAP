@@ -51,13 +51,13 @@ def intantiate_dict_results(explanations, masks):
 
 class Trainer():
 
-	def __init__(self, model,
+	def __init__(self, model, lr=0.001,
 	             criterion=torch.nn.CrossEntropyLoss(reduction='none')):
 
 		self.model = model
 		self.criterion = criterion
 		# TODO do it better
-		self.optimizer = torch.optim.Adam(self.model.parameters(), lr=0.001)
+		self.optimizer = torch.optim.Adam(self.model.parameters(), lr=lr)
 
 	def forward_epoch(self, data_loader, training=False):
 

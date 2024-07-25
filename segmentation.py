@@ -26,7 +26,7 @@ def get_feature_mask(segments,series_length):
 
 def get_claSP_segmentation(X):
 	result = []
-	clasp = ClaSPSegmenter(n_cps=6, period_length=5)
+	clasp = ClaSPSegmenter(n_cps=6, period_length=3)#5)
 
 	for ch in range(X.shape[0]):
 
@@ -40,8 +40,8 @@ def get_claSP_segmentation(X):
 
 		result.append( found_cps )
 
-	result.append( [] )
-	return  np.array(result, dtype=object)
+	return np.fromiter(result, dtype=object)
+
 
 def ensure_begins_with_0(L):
     if len(L)==0:
