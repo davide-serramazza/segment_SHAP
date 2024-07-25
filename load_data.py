@@ -11,12 +11,6 @@ def load_data(subset, dataset_name, path="datasets"):
 			"subset has to be  either 'train' ,'test' or 'all'"
 		)
 
-	#TODO to be reintroduced
-	#if dataset_name not in {'UWAVE', 'gunpoint', 'synth_uni', 'synth_fixed_multi'}:
-#		raise ValueError(
-	#		"dataset_name note recognized"
-#		)
-
 	if dataset_name == "UWAVE":
 		X_train, y_train = np.load(os.path.join(path, "UWAVE/Xtr.npy")), np.load(os.path.join(path, "UWAVE/Ytr.npy"))
 		X_test, y_test = np.load(os.path.join(path, "UWAVE/Xte.npy")), np.load(os.path.join(path, "UWAVE/Yte.npy"))
@@ -31,9 +25,6 @@ def load_data(subset, dataset_name, path="datasets"):
 		X_test, y_test = load_gunpoint(split="test")
 		X_train = X_train.astype(np.float32) ;  X_test = X_test.astype(np.float32)
 
-	elif dataset_name.startswith("synth"):
-		X_train, X_test, y_train, y_test= load_synth_data(dataset_name)
-
 	elif dataset_name == "MP50":
 		X_train, y_train = load_from_tsfile(os.path.join(path, "MilitaryPress/TRAIN_full_X.ts"))
 		X_test, y_test = load_from_tsfile(os.path.join(path, "MilitaryPress/TEST_full_X.ts"))
@@ -43,11 +34,6 @@ def load_data(subset, dataset_name, path="datasets"):
 		data = np.load(os.path.join(path, "MilitaryPress/MP_centered.npy"), allow_pickle=True).item()
 		X_train, y_train = data["train"]["X"].astype(np.float32), data["train"]["y"]
 		X_test, y_test = data["test"]["X"].astype(np.float32), data["test"]["y"]
-
-	elif dataset_name == "ethanolLevel":
-		X_train, y_train = load_from_tsfile("datasets/EthanolLevel/EthanolLevel_TRAIN.ts")
-		X_test, y_test = load_from_tsfile("datasets/EthanolLevel/EthanolLevel_TEST.ts")
-		X_train ,X_test = X_train.astype(np.float32), X_test.astype(np.float32)
 
 	elif dataset_name == "EOG":
 		# load horizontal signal
@@ -68,16 +54,16 @@ def load_data(subset, dataset_name, path="datasets"):
 		assert np.all(y_test_h == y_test_v)
 		y_train, y_test = y_train_h, y_test_h
 
-	elif dataset_name == "CinECG":
-		first_split_X, first_split_y = load_from_tsfile("datasets/CinCECGTorso/CinCECGTorso_TRAIN.ts")
-		second_split_X, second_split_y = load_from_tsfile("datasets/CinCECGTorso/CinCECGTorso_TEST.ts")
+	elif dataset_name == "KeplerLightCurves":
+		X_train , y_train = load_from_tsfile( os.path.join(path, "KeplerLightCurves/KeplerLightCurves_TRAIN.ts") )
+		X_test , y_test = load_from_tsfile( os.path.join(path, "KeplerLightCurves/KeplerLightCurves_TEST.ts") )
+		X_train ,X_test = X_train.astype(np.float32), X_test.astype(np.float32)
 
-		to_train_set = np.random.choice(second_split_y.size, second_split_y.size-500, replace=False)
-		new_test_set = [ i for i in range(second_split_y.size) if i not in to_train_set]
+	elif dataset_name.startswith("synth"):
+		X_train, X_test, y_train, y_test = load_synth_data(dataset_name,path)
 
-		X_train, y_train =  np.concatenate( (first_split_X, second_split_X[to_train_set]) ,axis=0 ), \
-							np.concatenate( (first_split_y, second_split_y[to_train_set]) ,axis=0 )
-		X_test, y_test = second_split_X[new_test_set], second_split_y[new_test_set]
+	else:
+		raise ValueError(f"Dataset {dataset_name} is not recognized")
 
 	le = LabelEncoder()
 	y_train = le.fit_transform(y_train)
@@ -91,49 +77,26 @@ def load_data(subset, dataset_name, path="datasets"):
 		return X_train, X_test, y_train, y_test, le.classes_
 
 
-def load_synth_data(dataset_name):
+def load_synth_data(dataset_name, path):
 	# TODO hard coded
 	# select file
-	if dataset_name.startswith("synth_fixed_multi"):
-		data = np.load("/home/davide/Desktop/datasets/fixed_length.npy", allow_pickle=True).item()
-	elif dataset_name.startswith("synth_varying_multi"):
-		data = np.load("/home/davide/Desktop/datasets/varying_length.npy", allow_pickle=True).item()
-
+	synth_path = os.path.join(path,"synth_data")
+	if dataset_name.startswith("synth_fixedLength"):
+		data = np.load( os.path.join(synth_path, 'fixed_length.npy'), allow_pickle=True).item()
+	elif dataset_name.startswith("synth_oneWave"):
+		data = np.load(  os.path.join(synth_path, 'one_wave.npy'), allow_pickle=True).item()
+	else:
+		raise ValueError(f"Synthetic dataset {dataset_name} is not recognized,it has to be either \
+			fixedLength or oneWave")
 
 	# select classification or regression target
+
 	X_train, X_test = data['train']['X'], data['test']['X']
 	if dataset_name.endswith("clf"):
 		y_train, y_test = data['train']['y_clf'], data['test']['y_clf']
 	elif dataset_name.endswith("reg"):
-		# TODO int or float for regression task???
-		y_train, y_test = data['train']['y_reg'].astype(float), data['test']['y_reg'].astype(float)
+		y_train, y_test = data['train']['y_reg'].astype(np.float32), data['test']['y_reg'].astype(np.float32)
+	else:
+		raise ValueError(f"Synthetic dataset {dataset_name} is not recognized, it has to be either clf or reg")
 
 	return X_train, X_test, y_train, y_test
-
-				                                                                   
-"""
-def load_synth_data(name):
-	if name == "synth_uni":
-		n_samples = 15000
-		n_features = 1
-		time_points = 500
-		file_names = ['uni_signals.csv','uni_classes.csv']
-	elif name == "synth_multi":
-		n_samples = 15000
-		n_features = 6
-		time_points = 500
-		file_names = ['multi_signals.csv','multi_classes.csv']
-
-	df_signal = pd.read_csv('/home/davide/Downloads/dataset/' + file_names[0])
-	df_class = pd.read_csv('/home/davide/Downloads/dataset/' + file_names[1])
-
-	X = np.zeros(shape=(n_samples, n_features, time_points))
-	for i in range(n_samples):
-		for j in range(n_features):
-			col_name = "sample_" + str(i) + "_feature" + str(j)
-			X[i, j] = df_signal[col_name].values
-	y = df_class['classes'].values
-	X_train, y_train = X[:14500], y[:14500]
-	X_test, y_test = X[14500:], y[14500:]
-	return X_test, X_train, y_test, y_train
-"""
