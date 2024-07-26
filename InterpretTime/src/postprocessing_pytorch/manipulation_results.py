@@ -33,11 +33,11 @@ from shared_utils.utils_path import data_path, results_interp_path
 from shared_utils.utils_visualization import plot_corrupted_signal
 from .method_arguments import dict_method_arguments
 from os.path import isfile
-from joblib import dump, load
+from pickle import dump, load
 
 warnings.simplefilter(action="ignore", category=FutureWarning)
 #from pytorch_utils import load_ConvTran
-#from utils import gen_cube
+
 
 def attribute_series_features(algorithm, net, sample, labels_idx, **kwargs):
     """Function to compute the attributions of a given algorithm on a given
@@ -193,8 +193,9 @@ class ScoreComputation:
         # check whether the dump is a joblilb one ( sklearn-like classifier) or torch one
         if isfile(self.model_path+".pt"):
             self.model = torch.load(self.model_path+".pt", map_location=device);  self.model.device = device
-        elif isfile(self.model_path+".bz2"):
-            self.model =load(self.model_path+".bz2")
+        elif isfile(self.model_path+".pkl"):
+            with open(self.model_path+".pkl", 'rb') as f:
+                self.model =load(f)
             if self.model_output=="probabilities":
                 self.model_output = "probabilities_aeon"
         else:

@@ -1,10 +1,6 @@
 import os
-import pickle
-
 import numpy as np
-import torch.cuda
 import timeit
-import pandas as pd
 import argparse
 import itertools
 from load_data import  load_data
@@ -20,7 +16,7 @@ def main(args):
     dataset_name = args.datasets
     classifier_name = args.classifier
     demo_mode = args.demo_mode
-    device = "cuda" if torch.cuda.is_available() else "cpu"
+    device = "cpu" #"cuda" if torch.cuda.is_available() else "cpu"
 
     # loading dataset
     all_qfeatures = [0.05 ,1.0] if args.demo_mode else [0.05, 0.15, 0.25, 0.35,0.45,0.55,0.65,0.75,0.85,0.95,1.0]
@@ -77,8 +73,10 @@ def main(args):
         #plot_additional_results(save_results_path)
 
     res_file_name = "demo_dict_result" if demo_mode else "dict_result"
-    with open( "_".join( (res_file_name,dataset_name,classifier_name)) ,"wb") as f:
-        pickle.dump(results_dict,f)
+    full_file_name = "_".join( (res_file_name,dataset_name,classifier_name))
+    path = "InterpretTime/dict_results"
+    with open( os.path.join(path,full_file_name)  ,"wb") as f:
+        dump(results_dict,f)
 
     print("elapsed time", ( timeit.default_timer() -starttime ) )
 
