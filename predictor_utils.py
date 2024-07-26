@@ -5,24 +5,32 @@ from torch import load as load_torch
 from torch.nn import Sequential, Softmax
 from sklearn.base import BaseEstimator as sklearn_Estimator
 from torch.nn import Module as torch_Estimator
+import os
+from sklearn.ensemble import RandomForestClassifier
 
-def load_predictor(path:str ,device='cpu'):
+def load_predictor(path:str, predictor_name:str, dataset_name:str ,device='cpu'):
 	"""
-	Load predictor model base on path but WE CAN CHANGE IT VERY EASILY!
+	Load predictor model
 
-	:param path:
-	:param device: device to be used for computation.It is only used for torch models,
+	:param path:p   path to trained model folder
+	:param device:  device to be used for computation.It is only used for torch models,
 	specifically "CPU" (CPU mode) or "cuda" (the model wil run on GPU)
 
 	:return: the pre-trained predictor
 	"""
-	if path.endswith('.pkl'):
+	model_path = os.path.join(path, "_".join( (predictor_name,dataset_name) ) )
+	if os.path.isfile(model_path+".pkl"):
 		# in this case this is a sklearn predictor (currently random Forest, QUANT and miniRocket)
-		with open(path, 'rb') as f:
+		with open(model_path+".pkl", 'rb') as f:
 			predictor = load_sklearn(f)
-	elif path.endswith('.pt'):
+
+		# TODO TEMP WORKAROUND!
+		if predictor_name=="randomForest":
+			predictor = RandomForest(predictor)
+
+	elif os.path.isfile(model_path+".pt"):
 		# in this case this is a torch predictor (currently resNet)
-		predictor = load_torch(path, map_location=device)
+		predictor = load_torch(model_path+".pt", map_location=device)
 		predictor = Sequential(predictor, Softmax(dim=-1)).eval()
 	else:
 		raise ValueError(f'Unsupported predictor extension: {path}')
@@ -34,10 +42,10 @@ def predict_proba (clf, samples: np.ndarray, device='cpu') -> np.ndarray:
 	"""
 	Predict class probabilities from a pre-trained classifier.
 
-	:param clf: classifier
+	:param clf:     classifier
 	:param samples: samples to be predicted
 
-	:return: probabilities as numpy arrays
+	:return:        probabilities as numpy arrays
 	"""
 
 	if isinstance(clf, sklearn_Estimator):
@@ -59,3 +67,22 @@ def predict_proba (clf, samples: np.ndarray, device='cpu') -> np.ndarray:
 		raise ValueError(f'Unsupported predictor type: {clf}')
 
 	return probas
+
+
+
+
+# TEMP CLASS!
+
+class RandomForest(RandomForestClassifier):
+
+	def __init__(self,model):
+		self.model = model
+
+	def fit(self, X, y):
+		X = np.reshape(X, ( X.shape[0] ,-1))
+		self.model.fit(X, y)
+
+	def predict_proba(self, X):
+		X = np.reshape(X, ( X.shape[0] ,-1))
+		return self.model.predict_proba(X)
+
