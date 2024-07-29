@@ -8,7 +8,7 @@ from torch.nn import Module as torch_Estimator
 import os
 from sklearn.ensemble import RandomForestClassifier
 
-def load_predictor(path:str, predictor_name:str, dataset_name:str ,device='cpu'):
+def load_predictor(path:str, predictor_name:str, dataset_name:str, device=None):
 	"""
 	Load predictor model
 
@@ -30,6 +30,8 @@ def load_predictor(path:str, predictor_name:str, dataset_name:str ,device='cpu')
 
 	elif os.path.isfile(model_path+".pt"):
 		# in this case this is a torch predictor (currently resNet)
+		if device is None:
+			device = "cuda" if torch.cuda.is_available() else "cpu"
 		predictor = load_torch(model_path+".pt", map_location=device)
 		predictor = Sequential(predictor, Softmax(dim=-1)).eval()
 	else:
@@ -38,7 +40,7 @@ def load_predictor(path:str, predictor_name:str, dataset_name:str ,device='cpu')
 	return predictor
 
 
-def predict_proba (clf, samples: np.ndarray, device='cpu') -> np.ndarray:
+def predict_proba (clf, samples: np.ndarray, device=None) -> np.ndarray:
 	"""
 	Predict class probabilities from a pre-trained classifier.
 
@@ -53,6 +55,8 @@ def predict_proba (clf, samples: np.ndarray, device='cpu') -> np.ndarray:
 		probas = clf.predict_proba(samples)
 	elif isinstance(clf,torch_Estimator):
 		# for torch first of all convert to torch Tensor
+		if device is None:
+			device = "cuda" if torch.cuda.is_available() else "cpu"
 		samples = torch.tensor(samples).to(device)
 		# then execute the forward in batch (currently set to 32)
 		batch_size = 32
