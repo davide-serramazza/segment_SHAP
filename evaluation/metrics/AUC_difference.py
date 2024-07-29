@@ -64,8 +64,8 @@ def AUC_difference(classifier, X_train, X_test, y_train, attributions, y_test_pr
         end_points = change_points[1:-1]
 
         # deletion
-        # sample_pred = y_test_pred[sample_idx] # TODO: this is the normal line of code, below a temporary until y_pred format is fixed
-        sample_pred = predict_proba(classifier, sample[None, :])[0]
+        sample_pred = y_test_pred[sample_idx] # TODO: this is the normal line of code, below a temporary until y_pred format is fixed
+        # sample_pred = predict_proba(classifier, sample[None, :])[0]
         
         sample_class_pred_idx = np.argmax(sample_pred)
         sample_class = classes[sample_class_pred_idx]
