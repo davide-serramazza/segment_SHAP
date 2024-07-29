@@ -24,9 +24,9 @@ def calc_AUC_score(A, A_pred, B, B_pred, start_points, end_points, salient_order
         preds.append(perturbed_sample_pred)
     preds.append(B_pred)
     if mode=="deletion":
-        preds = np.abs((np.array(preds) - B_pred))
+        preds = (np.array(preds) - B_pred) #np.abs() # B pred will be opprosite class in the insertion case
     elif mode=="insertion":
-        preds = np.abs((np.array(preds) - A_pred))
+        preds = (np.array(preds) - A_pred) #np.abs() # A pred will be opprosite class in the insertion case
     else:
         raise ValueError(f"mode must be deletion or insertion, but it is {mode}")
 

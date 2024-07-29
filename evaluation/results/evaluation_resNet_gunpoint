@@ -1,9 +1,9 @@
 ,Dataset,Segmentation,ML model,Background,Normalization,Metric,Perturb,Result
-0,gunpoint,clasp,resNet,average,default,AUC_difference,default,0.2107109800691002
-1,gunpoint,clasp,resNet,average,default,AUC_difference,normalized,2.0305364751121613
-2,gunpoint,clasp,resNet,average,normalized,AUC_difference,default,0.24292309905518103
-3,gunpoint,clasp,resNet,average,normalized,AUC_difference,normalized,1.172367484803121
-4,gunpoint,clasp,resNet,zero,default,AUC_difference,default,0.2208639290995387
-5,gunpoint,clasp,resNet,zero,default,AUC_difference,normalized,-0.9374621004597823
-6,gunpoint,clasp,resNet,zero,normalized,AUC_difference,default,0.1998016988090848
-7,gunpoint,clasp,resNet,zero,normalized,AUC_difference,normalized,0.1474740729760406
+0,gunpoint,clasp,resNet,average,default,AUC_difference,default,0.11273079054395856
+1,gunpoint,clasp,resNet,average,default,AUC_difference,normalized,-0.09912748028554987
+2,gunpoint,clasp,resNet,average,normalized,AUC_difference,default,0.12287450687661858
+3,gunpoint,clasp,resNet,average,normalized,AUC_difference,normalized,0.08291199530412025
+4,gunpoint,clasp,resNet,zero,default,AUC_difference,default,0.039107709976418104
+5,gunpoint,clasp,resNet,zero,default,AUC_difference,normalized,-0.045243640950211335
+6,gunpoint,clasp,resNet,zero,normalized,AUC_difference,default,0.03276044349167816
+7,gunpoint,clasp,resNet,zero,normalized,AUC_difference,normalized,-0.1536179381399049
