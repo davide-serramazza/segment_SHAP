@@ -1,6 +1,7 @@
-trained_models/
-attributions/
-datasets/
+# trained_models/
+# attributions/
+# datasets/
+# evaluations/results/
 
 
 # Created by https://www.toptal.com/developers/gitignore/api/intellij,python
