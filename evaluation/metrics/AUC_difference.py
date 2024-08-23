@@ -24,16 +24,15 @@ def calc_AUC_score(A, A_pred, B, B_pred, start_points, end_points, salient_order
         preds.append(perturbed_sample_pred)
     preds.append(B_pred)
     if mode=="deletion":
-        preds = (np.array(preds) - B_pred) #np.abs() # B pred will be opprosite class in the insertion case
+        preds = (np.array(preds) - B_pred) #np.abs() # B pred will be opposite class in the deletion case
     elif mode=="insertion":
-        preds = (np.array(preds) - A_pred) #np.abs() # A pred will be opprosite class in the insertion case
+        preds = (np.array(preds) - A_pred) #np.abs() # A pred will be opposite class in the insertion case
     else:
         raise ValueError(f"mode must be deletion or insertion, but it is {mode}")
 
     AUC_score = sklearn_auc(x=np.linspace(0, 1, len(preds)), y=preds)
-    normalized_AUC_score = AUC_score / np.abs(A_pred - B_pred)
 
-    return AUC_score, normalized_AUC_score
+    return AUC_score
 
 
 def AUC_difference(classifier, X_train, X_test, y_train, attributions, y_test_pred, label_mapping, n_steps=18):
@@ -77,18 +76,21 @@ def AUC_difference(classifier, X_train, X_test, y_train, attributions, y_test_pr
         A_pred = sample_class_pred
         B = opposite_sample.reshape(n_channels * n_timepoints).copy()
         B_pred = opposite_class_pred
-        AUC_deletion, normalized_AUC_deletion = calc_AUC_score(A, A_pred, B, B_pred, start_points, end_points, salient_order, n_channels, n_timepoints, sample_class_pred_idx, classifier, mode="deletion")
+        AUC_deletion = calc_AUC_score(A, A_pred, B, B_pred, start_points, end_points, salient_order, n_channels, n_timepoints, sample_class_pred_idx, classifier, mode="deletion")
 
         A = opposite_sample.reshape(n_channels * n_timepoints).copy()
         A_pred = opposite_class_pred
         B = sample.reshape(n_channels * n_timepoints).copy()
         B_pred = sample_class_pred
-        AUC_insertion, normalized_AUC_insertion = calc_AUC_score(A, A_pred, B, B_pred, start_points, end_points, salient_order, n_channels, n_timepoints, sample_class_pred_idx, classifier, mode="insertion")
+        AUC_insertion = calc_AUC_score(A, A_pred, B, B_pred, start_points, end_points, salient_order, n_channels, n_timepoints, sample_class_pred_idx, classifier, mode="insertion")
 
         AUC_diff = AUC_insertion - AUC_deletion
         AUC_diff_array[sample_idx] = AUC_diff
 
-        normalized_AUC_diff = normalized_AUC_insertion - normalized_AUC_deletion
+        if A_pred == B_pred:
+            normalized_AUC_diff = AUC_diff
+        else:
+            normalized_AUC_diff = AUC_diff / np.abs(A_pred - B_pred)
         normalized_AUC_diff_array[sample_idx] = normalized_AUC_diff
 
     mean_AUC_diff = np.mean(AUC_diff_array)
