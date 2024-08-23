@@ -5,8 +5,10 @@ from torch import load as load_torch
 from torch.nn import Sequential, Softmax
 from sklearn.base import BaseEstimator as sklearn_Estimator
 from torch.nn import Module as torch_Estimator
+from models import CNN_models
+from models.CNN_models import *
+
 import os
-from sklearn.ensemble import RandomForestClassifier
 
 def load_predictor(path:str, predictor_name:str, dataset_name:str, device=None):
 	"""
@@ -24,9 +26,6 @@ def load_predictor(path:str, predictor_name:str, dataset_name:str, device=None):
 		with open(model_path+".pkl", 'rb') as f:
 			predictor = load_sklearn(f)
 
-		# TODO TEMP WORKAROUND!
-		if predictor_name=="randomForest":
-			predictor = RandomForest(predictor)
 
 	elif os.path.isfile(model_path+".pt"):
 		# in this case this is a torch predictor (currently resNet)
@@ -77,16 +76,5 @@ def predict_proba (clf, samples: np.ndarray, device=None) -> np.ndarray:
 
 # TEMP CLASS!
 
-class RandomForest(RandomForestClassifier):
 
-	def __init__(self,model):
-		self.model = model
-
-	def fit(self, X, y):
-		X = np.reshape(X, ( X.shape[0] ,-1))
-		self.model.fit(X, y)
-
-	def predict_proba(self, X):
-		X = np.reshape(X, ( X.shape[0] ,-1))
-		return self.model.predict_proba(X)
 

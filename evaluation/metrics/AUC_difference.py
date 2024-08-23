@@ -1,5 +1,5 @@
 import numpy as np
-from predictor_utils import predict_proba
+from models.predictor_utils import predict_proba
 from sklearn.metrics import auc as sklearn_auc
 
 def normalize_saliency(saliency):

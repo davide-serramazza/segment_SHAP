@@ -9,6 +9,7 @@ from InterpretTime.src.postprocessing_pytorch.manipulation_results import ScoreC
 from InterpretTime.src.shared_utils.utils_visualization import plot_DeltaS_results, plot_additional_results
 from pickle import dump
 from utils import intantiate_dict_results
+import torch
 
 def main(args):
 
@@ -16,7 +17,7 @@ def main(args):
     dataset_name = args.datasets
     classifier_name = args.classifier
     demo_mode = args.demo_mode
-    device = "cpu" #"cuda" if torch.cuda.is_available() else "cpu"
+    device = "cuda" if torch.cuda.is_available() else "cpu"
 
     # loading dataset
     all_qfeatures = [0.05 ,1.0] if args.demo_mode else [0.05, 0.15, 0.25, 0.35,0.45,0.55,0.65,0.75,0.85,0.95,1.0]
@@ -47,7 +48,7 @@ def main(args):
         print("assessing ", it[:-1], "using",mask)
 
         # load model and explanations to access
-        model_path = os.path.join("trained_models", file_name)
+        model_path = os.path.join("models/trained_models", file_name)
         attributions = explanations['attributions'][dataset][segmentation][predictor][background][result_type]
 
         # TODO consider regression case i.e. no label!
