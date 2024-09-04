@@ -1,5 +1,6 @@
 import numpy as np
 import torch
+from torch.nn import Sequential, Softmax
 import pandas as pd
 from copy import deepcopy
 
@@ -116,8 +117,7 @@ class Trainer():
 
 			# early stopping
 			if current_test_accuracy > best_test_accuracy:
-				# TODO do i need all these test_out as in .test or in .fowrard_epoch?
-				torch.save(self.model, model_path)
+				torch.save( self.model , model_path)
 				best_test_accuracy = current_test_accuracy
 				best_test_loss = test_loss
 				non_improving_epochs = 0
