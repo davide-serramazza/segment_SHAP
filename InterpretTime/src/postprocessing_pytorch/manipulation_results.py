@@ -34,6 +34,7 @@ from shared_utils.utils_visualization import plot_corrupted_signal
 from .method_arguments import dict_method_arguments
 from os.path import isfile
 from pickle import dump, load
+from torch.nn import Sequential, Softmax
 
 warnings.simplefilter(action="ignore", category=FutureWarning)
 #from pytorch_utils import load_ConvTran
@@ -190,7 +191,7 @@ class ScoreComputation:
         self.batch_size = batch_size
         self.isRandomForest = randomForest
 
-        # check whether the dump is a joblilb one ( sklearn-like classifier) or torch one
+        # check whether the dump is a pickle one ( sklearn-like classifier) or torch one
         if isfile(self.model_path+".pt"):
             self.model = torch.load(self.model_path+".pt", map_location=device);  self.model.device = device
         elif isfile(self.model_path+".pkl"):
@@ -1133,7 +1134,8 @@ class ScoreComputation:
 
         if self.model_output == "probabilities":
             print("Model output is probability")
-            self.model = nn.Sequential(self.model, nn.Softmax(dim=-1)).eval()
+            self.model = self.model.eval() if ( type(self.model) is Sequential and  type(self.model[-1]) is Softmax) \
+                else Sequential(self.model, nn.Softmax(dim=-1)).eval()
         elif self.model_output == "probabilities_aeon":
             print("Model output is probability")
             self.model = self.model.predict_proba

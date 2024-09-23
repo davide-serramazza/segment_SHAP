@@ -61,7 +61,7 @@ def train_QUANT(X_train, y_train, X_test, y_test, dataset_name):
 	return clf, preds
 
 
-def train_ResNet(X_train, y_train, X_test, y_test, dataset_name, device,  n_ch=128, lr=0.0001 ):
+def train_ResNet(X_train, y_train, X_test, y_test, dataset_name, device,  n_ch=128, lr=0.001 ):
 
 	# get  number of in channel (c_in) , last layer output (c_out)
 	c_in = X_train.shape[1]
@@ -81,7 +81,10 @@ def train_ResNet(X_train, y_train, X_test, y_test, dataset_name, device,  n_ch=1
 	outs, acc = trainer.train(n_epochs=1000, train_loader=train_loader,model_path=model_path,
 	                          test_loader=test_loader, n_epochs_stop=100)
 	# load best model from disk (early stopping)
-	clf = torch.load(model_path, map_location=device)
+	clf =  torch.nn.Sequential(
+		torch.load(model_path, map_location=device).eval() ,
+		torch.nn.Softmax(dim=-1)
+	)
 
 	# get predictions in batches
 	preds = []

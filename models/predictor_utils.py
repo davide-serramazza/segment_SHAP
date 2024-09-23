@@ -31,7 +31,7 @@ def load_predictor(path:str, predictor_name:str, dataset_name:str, device=None):
 		# in this case this is a torch predictor (currently resNet)
 		if device is None:
 			device = "cuda" if torch.cuda.is_available() else "cpu"
-		predictor = load_torch(model_path+".pt", map_location=device)
+		predictor = load_torch(model_path+".pt", map_location=device).eval()
 		predictor = Sequential(predictor, Softmax(dim=-1)).eval()
 	else:
 		raise ValueError(f'Unsupported predictor extension: {path}')

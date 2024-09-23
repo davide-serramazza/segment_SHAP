@@ -1,9 +1,8 @@
-import numpy as np
 from captum.attr import ShapleyValueSampling
 from tqdm import trange
 
 from load_data import load_data
-from train_models import train_randomForest
+from models.train_models import train_randomForest
 from segmentation import *
 from utils import *
 
