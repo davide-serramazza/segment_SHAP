@@ -100,7 +100,7 @@ class AUIDC_metric():
             AUC_diff = AUC_insertion - AUC_deletion
             AUC_diff_array[sample_idx] = AUC_diff
 
-        mean_AUC_diff = np.mean(AUC_diff_array)
+        mean_AUC_diff = np.mean(AUC_diff_array) # std
 
         return (("default", mean_AUC_diff), ) #, ("normalized", mean_normalized_AUC_diff)
 
