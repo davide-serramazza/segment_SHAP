@@ -1,0 +1,3 @@
+,Dataset,ML model,Metric,Perturb,Result
+0,KeplerLightCurves,miniRocket,opposite_class,mean,0.14232233656953094
+1,KeplerLightCurves,miniRocket,opposite_class,std,0.09220479148771035
