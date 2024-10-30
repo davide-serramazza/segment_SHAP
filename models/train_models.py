@@ -10,14 +10,13 @@ from aeon.classification.interval_based import QUANTClassifier
 from os import path
 from models.model_wrappers import RandomForest, MiniRocket
 
-def save_model(clf, dataset_name, clf_name):
+def save_model(clf, dataset_name, clf_name, dir_name):
 	if dataset_name is not None:
-		dir_name = "models/trained_models"
 		file_name = "_".join((clf_name, dataset_name)) + ".pkl"
 		with open(path.join(dir_name, file_name), "wb") as f:
 			dump(clf, f)
 
-def train_randomForest(X_train, y_train, X_test, y_test, dataset_name):
+def train_randomForest(X_train, y_train, X_test, y_test, dataset_name, dir_name):
 	X_train, X_test = X_train.reshape(X_train.shape[0], -1), X_test.reshape(X_test.shape[0], -1)
 
 	clf = RandomForest( RandomForestClassifier(n_jobs=4) )
@@ -27,12 +26,12 @@ def train_randomForest(X_train, y_train, X_test, y_test, dataset_name):
 	preds = clf.predict_proba(X_test)
 	print("accuracy for random forest is", acc)
 
-	save_model(clf, dataset_name,"randomForest")
+	save_model(clf, dataset_name,"randomForest",dir_name)
 
 	return clf, preds
 
 
-def train_miniRocket(X_train, y_train, X_test, y_test, dataset_name):
+def train_miniRocket(X_train, y_train, X_test, y_test, dataset_name, dir_name):
 
 	clf = MiniRocket( RocketClassifier(rocket_transform='miniRocket',n_jobs=20) )
 	print("training miniRocket")
@@ -41,13 +40,13 @@ def train_miniRocket(X_train, y_train, X_test, y_test, dataset_name):
 	preds = clf.predict_proba(X_test)
 	print("accuracy for miniRocket is ", score)
 
-	save_model(clf, dataset_name,"miniRocket")
+	save_model(clf, dataset_name,"miniRocket", dir_name)
 
 	return clf, preds
 
 
 
-def train_QUANT(X_train, y_train, X_test, y_test, dataset_name):
+def train_QUANT(X_train, y_train, X_test, y_test, dataset_name, dir_name):
 	clf = QUANTClassifier()
 
 	print("training QUANT")
@@ -56,12 +55,12 @@ def train_QUANT(X_train, y_train, X_test, y_test, dataset_name):
 	preds = clf.predict_proba(X_test)
 	print("accuracy for QUANT is ", score)
 
-	save_model(clf, dataset_name,"QUANT")
+	save_model(clf, dataset_name,"QUANT", dir_name)
 
 	return clf, preds
 
 
-def train_ResNet(X_train, y_train, X_test, y_test, dataset_name, device,  n_ch=128, lr=0.001 ):
+def train_ResNet(X_train, y_train, X_test, y_test, dataset_name, device, dir_name, n_ch=128, lr=0.001 ):
 
 	# get  number of in channel (c_in) , last layer output (c_out)
 	c_in = X_train.shape[1]
@@ -74,12 +73,18 @@ def train_ResNet(X_train, y_train, X_test, y_test, dataset_name, device,  n_ch=1
 	train_loader = DataLoader(TSDataset(X_train, y_train,device=device), batch_size=batch_size, shuffle=True)
 	test_loader = DataLoader(TSDataset(X_test, y_test, device=device), batch_size=batch_size, shuffle=False)
 
+
 	# train resNet
 	trainer = Trainer(model=clf, lr=lr)
 	print("training ResNet")
-	model_path = "models/trained_models/resNet_" + dataset_name + ".pt" if dataset_name is not None else "models/trained_models/tmp_resNet"
+	# where to save
+	file_name = "resNet_" + dataset_name + ".pt"  if dataset_name is not None else "tmp_resNet"
+	model_path = path.join(dir_name ,file_name)
+	# start training
 	outs, acc = trainer.train(n_epochs=1000, train_loader=train_loader,model_path=model_path,
 	                          test_loader=test_loader, n_epochs_stop=100)
+
+
 	# load best model from disk (early stopping)
 	clf =  torch.nn.Sequential(
 		torch.load(model_path, map_location=device).eval() ,

@@ -19,6 +19,10 @@ class RandomForest(RandomForestClassifier):
         X = np.reshape(X, ( X.shape[0] ,-1))
         return self.model.predict_proba(X)
 
+    def score(self, X, y, sample_weight=None):
+        X = np.reshape(X, ( X.shape[0] ,-1))
+        return self.model.score(X,y)
+
     def predict(self,X):
         X = np.reshape(X, ( X.shape[0] ,-1))
         return self.model.predict(X)
@@ -49,6 +53,9 @@ class MiniRocket(RocketClassifier):
 
     def predict(self,X):
         return self.model.predict(X)
+
+    def score(self, X, y):
+        return self.model.score(X,y)
 
     def predict_proba(self, X):
 
