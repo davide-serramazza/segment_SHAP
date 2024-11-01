@@ -5,7 +5,7 @@ import copy
 
 class AUIDC_metric():
 
-    def __init__(self, max_steps=100):
+    def __init__(self, max_steps=25):
         self.max_steps = max_steps
 
     def fit_data(self, X_train, X_test, y_train, y_test):
