@@ -50,7 +50,8 @@ def ensure_begins_with_0(L):
         L = [0] + L
     return L
 
-def get_NNSegment_segmentation(X, window_size=None, n_change_points=5, **kwargs):
+def get_NNSegment_segmentation(X, window_size=None, n_segments=5, **kwargs):
+    n_change_points = n_segments - 1
     X = X.astype(np.float64)
     n_channels, n_timepoints = X.shape
     if window_size is None:
@@ -73,7 +74,8 @@ def labels_to_changepoints(labels):
     change_points = np.append(0, np.arange(1, len(labels))[keys])
     return change_points
 
-def get_InformationGain_segmentation(X, n_change_points: int = 5, step: int = 5):
+def get_InformationGain_segmentation(X, n_segments=5, step=5):
+    n_change_points = n_segments - 1
     n_channels, n_timepoints = X.shape
     igts = InformationGainSegmentation(k_max=n_change_points, step=step)
     X = X.T
@@ -91,7 +93,8 @@ def get_InformationGain_segmentation(X, n_change_points: int = 5, step: int = 5)
     change_points_per_channel = np.fromiter(change_points_per_channel, dtype=object)
     return change_points_per_channel
 
-def get_GreedyGaussian_segmentation(X, n_change_points: int = 5, **kwargs):
+def get_GreedyGaussian_segmentation(X, n_segments=5, **kwargs):
+    n_change_points = n_segments - 1
     n_channels, n_timepoints = X.shape
     ggs = GreedyGaussianSegmentation(k_max=n_change_points, **kwargs) 
     X = X.T
