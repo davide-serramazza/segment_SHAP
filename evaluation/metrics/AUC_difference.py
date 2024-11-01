@@ -68,16 +68,16 @@ class AUIDC_metric():
 
     def AUC_difference(self, attributions, y_test_pred, ml_model):
 
-        AUC_diff_array = np.zeros(self.n_test_samples)
+        AUC_insertion_array, AUC_deletion_array = np.zeros(self.n_test_samples), np.zeros(self.n_test_samples)
 
         for sample_idx, sample in enumerate(self.X_test):
             importance = self.normalize_saliency(attributions[sample_idx])
             salient_order = np.argsort(importance.reshape(self.n_features))[::-1] # decreasing
-            
+
             # deletion
             sample_pred = y_test_pred[sample_idx] # TODO: this is the normal line of code, below a temporary until y_pred format is fixed
             # sample_pred = predict_proba(ml_model, sample[None, :])[0]
-            
+
             sample_pred_class_idx = np.argmax(sample_pred)
             target_class_idx = sample_pred_class_idx
             sample_pred_class = self.classes[target_class_idx]
@@ -97,12 +97,14 @@ class AUIDC_metric():
             B_pred = sample_pred_target
             AUC_insertion = self.calc_AUC_score(A, A_pred, B, B_pred, salient_order, target_class_idx, ml_model, mode="insertion")
 
-            AUC_diff = AUC_insertion - AUC_deletion
-            AUC_diff_array[sample_idx] = AUC_diff
+            # AUC_diff = AUC_insertion - AUC_deletion
+            AUC_insertion_array[sample_idx] = AUC_insertion
+            AUC_deletion_array[sample_idx] = AUC_deletion
 
-        mean_AUC_diff = np.mean(AUC_diff_array) # std
+        mean_AUC_insertion = np.mean(AUC_insertion_array) # std
+        mean_AUC_deletion = np.mean(AUC_deletion_array) # std
 
-        return (("default", mean_AUC_diff), ) #, ("normalized", mean_normalized_AUC_diff)
+        return (("insertion", mean_AUC_insertion), ("deletion", mean_AUC_deletion)) #, ("normalized", mean_normalized_AUC_diff)
 
     def evaluate(self, attributions, y_test_pred, ml_model):
         return self.AUC_difference(attributions, y_test_pred, ml_model)
