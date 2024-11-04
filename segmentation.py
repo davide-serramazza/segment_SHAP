@@ -24,23 +24,25 @@ def get_feature_mask(segments,series_length):
 
 	return feature_mask
 
-def get_claSP_segmentation(X):
-	result = []
-	clasp = ClaSPSegmenter(n_cps=6, period_length=3)#5)
+def get_claSP_segmentation(X , n_segments=5):
 
-	for ch in range(X.shape[0]):
+    n_change_points = n_segments - 1
 
-		uts = X[ch]
-		found_cps, profiles, scores = clasp._run_clasp(uts)
+    result = []
+    clasp = ClaSPSegmenter(n_cps=n_segments, period_length=4)
 
-		# it seems that they are not sorted
-		found_cps.sort()
-		if found_cps[0]!=0:
-			found_cps = np.append(0,found_cps)
+    for ch in range(X.shape[0]):
 
-		result.append( found_cps )
+        uts = X[ch]
+        found_cps, profiles, scores = clasp._run_clasp(uts)
 
-	return np.fromiter(result, dtype=object)
+        found_cps.sort()
+        if found_cps[0]!=0:
+            found_cps = np.append(0,found_cps)
+
+        result.append( found_cps )
+
+    return np.fromiter(result, dtype=object)
 
 
 def ensure_begins_with_0(L):
