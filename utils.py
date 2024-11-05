@@ -15,6 +15,7 @@ def forward_classification(X_test: torch.Tensor, model):
 
 
 def sample_background(X_train, n):
+	np.random.seed(42)
 	to_select = np.random.permutation(X_train.shape[0])[:n]
 	return torch.tensor(X_train[to_select])
 
