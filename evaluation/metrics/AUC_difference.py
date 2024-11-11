@@ -35,7 +35,7 @@ class AUIDC_metric():
             self.mean_class_dict[unique_class]["pred"] = mean_class_pred
 
         for target_class in self.classes:
-            mean_class_preds_for_target_class = {unique_class: self.mean_class_dict[i]["pred"][target_class] for unique_class in self.classes} # {class: prediction of avg_class_sample for target_class}
+            mean_class_preds_for_target_class = {unique_class: self.mean_class_dict[unique_class]["pred"][target_class] for unique_class in self.classes} # {class: prediction of avg_class_sample for target_class}
             opposite_class = min(mean_class_preds_for_target_class, key=mean_class_preds_for_target_class.get)
             self.opposite_class_dict[target_class] = opposite_class
 
