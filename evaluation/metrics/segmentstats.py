@@ -28,18 +28,19 @@ class SegmentStats_metric():
 
         n_segments = np.array([[len(channel_lengths) for channel_lengths in instance_lengths] for instance_lengths in lengths])
         max_segments = np.max(n_segments)
-        min_segments = np.min(n_segments)
-        if min_segments < max_segments:
-            lesser_segments = n_segments[n_segments < max_segments]
-            percent_lesser_segments = lesser_segments.size / n_segments.size
-            mean_lesser_segments = np.mean(lesser_segments)
-            percent_mean_lesser_segments = mean_lesser_segments / max_segments
-        else:
-            percent_lesser_segments = 0.0
-            percent_mean_lesser_segments = 1.0
+        n_segments_mean = np.mean(n_segments) #/ max_segments
+        n_segments_std = np.std(n_segments) #/ max_segments
+        # if min_segments < max_segments:
+        #     lesser_segments = n_segments[n_segments < max_segments]
+        #     percent_lesser_segments = lesser_segments.size / n_segments.size
+        #     mean_lesser_segments = np.mean(lesser_segments)
+        #     percent_mean_lesser_segments = mean_lesser_segments / max_segments
+        # else:
+        #     percent_lesser_segments = 0.0
+        #     percent_mean_lesser_segments = 1.0
 
 
-        return (("entropy_mean", entropy_mean), ("entropy_std", entropy_std), ("min_segments", min_segments), ("max_segments", max_segments), ("percent_lesser_segments", percent_lesser_segments), ("percent_mean_lesser_segments", percent_mean_lesser_segments))
+        return (("entropy_mean", entropy_mean), ("entropy_std", entropy_std), ("n_segments_mean", n_segments_mean), ("n_segments_std", n_segments_std))
 
     def evaluate(self, segments):
         return self.segmentstats(segments)
