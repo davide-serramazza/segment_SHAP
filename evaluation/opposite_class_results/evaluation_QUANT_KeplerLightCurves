@@ -1,3 +1,0 @@
-,Dataset,ML model,Metric,Perturb,Result
-0,KeplerLightCurves,QUANT,opposite_class,mean,0.14714285714285716
-1,KeplerLightCurves,QUANT,opposite_class,std,0.25853788259110866

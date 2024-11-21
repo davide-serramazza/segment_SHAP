@@ -1,3 +1,0 @@
-,Dataset,ML model,Metric,Perturb,Result
-0,gunpoint,QUANT,opposite_class,mean,0.3925
-1,gunpoint,QUANT,opposite_class,std,0.28250000000000003

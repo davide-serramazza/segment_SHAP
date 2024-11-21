@@ -2,7 +2,6 @@
 attributions/
 datasets/
 evaluation/results/
-evaluation/entropy_results/
 
 
 # Created by https://www.toptal.com/developers/gitignore/api/intellij,python

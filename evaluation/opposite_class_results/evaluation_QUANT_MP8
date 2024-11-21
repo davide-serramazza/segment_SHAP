@@ -1,3 +1,0 @@
-,Dataset,ML model,Metric,Perturb,Result
-0,MP8,QUANT,opposite_class,mean,0.17125
-1,MP8,QUANT,opposite_class,std,0.16218719893999034

@@ -1,3 +1,0 @@
-,Dataset,ML model,Metric,Perturb,Result
-0,gunpoint,miniRocket,opposite_class,mean,0.5030781636424064
-1,gunpoint,miniRocket,opposite_class,std,0.4177603493927187

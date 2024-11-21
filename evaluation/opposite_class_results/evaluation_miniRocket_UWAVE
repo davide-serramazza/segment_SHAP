@@ -1,3 +1,0 @@
-,Dataset,ML model,Metric,Perturb,Result
-0,UWAVE,miniRocket,opposite_class,mean,0.11523954985129242
-1,UWAVE,miniRocket,opposite_class,std,0.07406095218815734
