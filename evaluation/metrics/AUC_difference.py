@@ -113,7 +113,7 @@ class AUIDC_metric():
         mean_AUC_deletion = np.mean(AUC_deletion_array) # std
         std_AUC_deletion = np.std(AUC_deletion_array) # std
 
-        return (("insertion", mean_AUC_insertion), ("deletion", mean_AUC_deletion), ("insertion", std_AUC_insertion), ("deletion", std_AUC_deletion)) #, ("normalized", mean_normalized_AUC_diff)
+        return (("insertion_mean", mean_AUC_insertion), ("deletion_mean", mean_AUC_deletion), ("insertion_std", std_AUC_insertion), ("deletion_std", std_AUC_deletion)) #, ("normalized", mean_normalized_AUC_diff)
 
     def evaluate(self, attributions, y_test_pred, ml_model):
         return self.AUC_difference(attributions, y_test_pred, ml_model)
