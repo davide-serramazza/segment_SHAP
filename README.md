@@ -22,6 +22,14 @@ consistently outperforms most of the custom time series segmentation algorithms.
 attribution normalisation technique that weights segments by their length and we show that it consistently improves 
 attribution quality. 
 
+## IMAGE
+
+![image](https://github.com/davide-serramazza/segment_SHAP/blob/main/evaluation/images/2%20factor%20aggregate/Aggregate%20Results%20for%20AUCD%20by%20ML%20model%20and%20Dataset.png)
+Aggregate AUCD scores by ML models and datasets 
+
+![image](https://github.com/davide-serramazza/segment_SHAP/blob/main/evaluation/images/2%20factor%20aggregate/Aggregate%20Results%20for%20AUCSE%20by%20ML%20model%20and%20Dataset.png)
+Aggregate AUCSE scores by ML models and datasets 
+
 ## CODE
 
 Main experiment pipeline is in ***normalized_segmentation.ipynb***
