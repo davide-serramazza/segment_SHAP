@@ -46,13 +46,5 @@ Other relevant notebooks are:
 
 ## DATA 
 
-[Datasets](https://drive.google.com/file/d/19zQgX_w83H1kTwlB1dLuQT8p_bM_sk1B/view?usp=drive_link 'Datasets')
-
-[Trained models](https://drive.google.com/drive/folders/1C1KBoaCV8ZmjusNXEr8itCsNfikhPVtq?usp=drive_link 'Trained models')
-
-[Attributions](https://drive.google.com/file/d/17M9CLJfbnAOBScfSeUTnwYTss26Z3eT8/view?usp=drive_link 'Attributions')
-
-[AUCDiff results](https://drive.google.com/drive/folders/1br4IIjng3kQIoRE_go2skrQA8R5nzoKB?usp=drive_link 'AUCDiff results') as CSV files
-
-[InterpretTime result](https://drive.google.com/drive/folders/1DfUtAZN6DLn_6eas_Etx9dcxqROQnlKf?usp=drive_link 'InterpretTime results') as numpy files (.npy)
+Datasets, trained models, computed attributions and results of XAI evaluations methods are available through [zenodo](https://zenodo.org/uploads/20608403)
 
