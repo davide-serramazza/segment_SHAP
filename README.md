@@ -49,7 +49,7 @@ Other relevant notebooks are:
 Datasets, trained models, computed attributions and results of XAI evaluations methods are available through [zenodo](https://zenodo.org/uploads/20608403)
 
 ## HOW TO CITE 
-
+```
 @InProceedings{10.1007/978-3-032-19105-2_32,
 author="Papadeas, Nikos
 and Serramazza, Davide Italo
@@ -66,4 +66,4 @@ address="Cham",
 pages="458--473",
 isbn="978-3-032-19105-2"
 }
-
+```
